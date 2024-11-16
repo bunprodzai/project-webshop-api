@@ -23,7 +23,7 @@ module.exports.index = async (req, res) => {
 
 // [POST] /api/v1/products-category/create
 module.exports.createPost = async (req, res) => {
-  
+
   try {
     if (req.role.permissions.includes("products-category_create")) {
       if (!req.body.position) {
@@ -84,22 +84,29 @@ module.exports.editPacth = async (req, res) => {
   try {
     if (req.role.permissions.includes("products-category_edit")) {
       const id = req.params.id;
-      console.log(req.body);
+      const category = await ProductCategory.findOne({ id: id });
 
-      if (req.body.position) {
-        req.body.position = parseInt(req.body.position);
+      if (category) {
+        if (req.body.position) {
+          req.body.position = parseInt(req.body.position);
+        }
+
+        const dataEdit = req.body;
+
+        await ProductCategory.updateOne({
+          _id: id
+        }, dataEdit);
+
+        res.json({
+          code: 200,
+          message: "Chỉnh sửa thành công!"
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "Không tồn tại danh mục này!"
+        });
       }
-
-      const dataEdit = req.body;
-
-      await ProductCategory.updateOne({
-        _id: id
-      }, dataEdit);
-
-      res.json({
-        code: 200,
-        message: "Chỉnh sửa thành công!"
-      });
     } else {
       res.json({
         code: 403,
@@ -125,18 +132,27 @@ module.exports.deleteItem = async (req, res) => {
   try {
     if (req.role.permissions.includes("products-category_del")) {
       const id = req.params.id;
+      const category = await ProductCategory.findOne({ id: id });
 
-      await ProductCategory.updateOne({
-        _id: id
-      }, {
-        deleted: true,
-        deteledAt: new Date()
-      });
+      if (category) {
+        await ProductCategory.updateOne({
+          _id: id
+        }, {
+          deleted: true,
+          deteledAt: new Date()
+        });
 
-      res.json({
-        code: 200,
-        message: "Xóa thành công"
-      });
+        res.json({
+          code: 200,
+          message: "Xóa thành công"
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "Không tồn tại danh mục này!"
+        });
+      }
+
     } else {
       res.json({
         code: 403,
@@ -157,7 +173,7 @@ module.exports.deleteMultiItem = async (req, res) => {
     if (req.role.permissions.includes("products-category_del")) {
       const { ids, key } = req.body;
       console.log(ids);
-      
+
       switch (key) {
         case "delete":
           await ProductCategory.updateMany({

@@ -231,7 +231,7 @@ module.exports.detail = async (req, res) => {
     }
   } catch (error) {
     res.json({
-      code: 200,
+      code: 400,
       message: "Lỗi params"
     })
   }

@@ -94,17 +94,25 @@ module.exports.editPatch = async (req, res) => {
   try {
     if (req.role.permissions.includes("users_edit")) {
       const idUser = req.params.idUser;
+      const user = await User.findOne({ _id: idUser, deleted: false });
 
-      if (req.body.password) {
-        req.body.password = md5(req.body.password);
+      if (user) {
+        if (req.body.password) {
+          req.body.password = md5(req.body.password);
+        }
+  
+        await User.updateOne({ _id: idUser }, req.body);
+  
+        res.json({
+          code: 200,
+          message: "Cập nhật thành công"
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "Không tồn tại user!"
+        });
       }
-
-      await User.updateOne({ _id: idUser }, req.body);
-
-      res.json({
-        code: 200,
-        message: "Cập nhật thành công"
-      });
     } else {
       res.json({
         code: 403,
@@ -124,13 +132,22 @@ module.exports.delete = async (req, res) => {
   try {
     if (req.role.permissions.includes("users_del")) {
       const idUser = req.params.idUser;
+      const user = await User.findOne({ _id: idUser, deleted: false });
 
-      await User.updateOne({ _id: idUser }, { deleted: true });
+      if (user) {
+        await User.updateOne({ _id: idUser }, { deleted: true });
 
-      res.json({
-        code: 200,
-        message: "Xóa tài khoản thành công"
-      });
+        res.json({
+          code: 200,
+          message: "Xóa tài khoản thành công"
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "Không tồn tại user!"
+        });
+      }
+
     } else {
       res.json({
         code: 403,
@@ -140,7 +157,7 @@ module.exports.delete = async (req, res) => {
   } catch (error) {
     res.json({
       code: 400,
-      message: "Lỗi params"
+      message: "Lỗi params!"
     });
   }
 }

@@ -25,7 +25,7 @@ module.exports.index = async (req, res) => {
       initPagination,
       req.query,
       countProduct
-    )
+    );
     // end phân trang
 
     // Tìm kiếm
