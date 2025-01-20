@@ -2,30 +2,48 @@ const ProductCategory = require("../../models/product.category.model");
 
 // [GET] /api/v1/products
 module.exports.index = async (req, res) => {
-  if (req.role.permissions.includes("products-category_view")) {
-    let find = {
-      deleted: false
-    }
-
-    const records = await ProductCategory.find(find);
-    res.json({
-      code: 200,
-      productsCategory: records
-    });
-  } else {
-    res.json({
+  if (!req.role.permissions.includes("products_category_view")) {
+    return res.status(403).json({
       code: 403,
-      message: "Bạn không có quyền xem danh mục sản phẩm!"
+      message: "Bạn không có quyền xem danh mục sản phẩm!",
     });
   }
-  // /api/v1/products-category
-}
 
+  try {
+    const find = { deleted: false };
+    const sort = {};
+
+    // Kiểm tra và thêm sắp xếp nếu có
+    if (req.query.sortKey && req.query.sortType) {
+      const { sortKey, sortType } = req.query;
+
+      // Đảm bảo sortType là `asc` hoặc `desc`
+      if (["asc", "desc"].includes(sortType)) {
+        sort[sortKey] = sortType === "asc" ? 1 : -1;
+      }
+    }
+
+    // Truy vấn cơ sở dữ liệu
+    const records = await ProductCategory.find(find).sort(sort);
+
+    res.json({
+      code: 200,
+      productsCategory: records,
+    });
+  } catch (error) {
+    console.error("Lỗi khi truy vấn danh mục sản phẩm:", error.message);
+
+    res.status(500).json({
+      code: 500,
+      message: "Đã xảy ra lỗi khi lấy danh mục sản phẩm!",
+    });
+  }
+}; // /api/v1/products-category
 // [POST] /api/v1/products-category/create
 module.exports.createPost = async (req, res) => {
 
   try {
-    if (req.role.permissions.includes("products-category_create")) {
+    if (req.role.permissions.includes("products_category_create")) {
       if (!req.body.position) {
         const countItem = await ProductCategory.countDocuments({ deleted: false });
         req.body.position = countItem + 1;
@@ -82,9 +100,9 @@ module.exports.createPost = async (req, res) => {
 // [PATCH] /api/v1/products-category/edit/:id
 module.exports.editPacth = async (req, res) => {
   try {
-    if (req.role.permissions.includes("products-category_edit")) {
+    if (req.role.permissions.includes("products_category_edit")) {
       const id = req.params.id;
-      const category = await ProductCategory.findOne({ id: id });
+      const category = await ProductCategory.findOne({ _id: id });
 
       if (category) {
         if (req.body.position) {
@@ -130,10 +148,10 @@ module.exports.editPacth = async (req, res) => {
 // [DELETE] /api/v1/products-category/delete-item/:id
 module.exports.deleteItem = async (req, res) => {
   try {
-    if (req.role.permissions.includes("products-category_del")) {
+    if (req.role.permissions.includes("products_category_del")) {
       const id = req.params.id;
-      const category = await ProductCategory.findOne({ id: id });
-
+      const category = await ProductCategory.findOne({ _id: id });
+      
       if (category) {
         await ProductCategory.updateOne({
           _id: id
@@ -170,7 +188,7 @@ module.exports.deleteItem = async (req, res) => {
 // [DELETE] /api/v1/products-category/deletemulti-item
 module.exports.deleteMultiItem = async (req, res) => {
   try {
-    if (req.role.permissions.includes("products-category_del")) {
+    if (req.role.permissions.includes("products_category_del")) {
       const { ids, key } = req.body;
       console.log(ids);
 
@@ -211,7 +229,7 @@ module.exports.deleteMultiItem = async (req, res) => {
 // [GET] /api/v1/products-category/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {
-    if (req.role.permissions.includes("products-category_edit")) {
+    if (req.role.permissions.includes("products_category_edit")) {
       const id = req.params.id;
       const status = req.params.status;
 

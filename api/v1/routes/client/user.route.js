@@ -11,8 +11,6 @@ const authMiddleware = require("../../middlewares/client/auth.middleware");
 
 router.post("/register",validateRegister.registerPost ,controller.registerPost);
 
-
-
 router.post("/login",validateLogin.loginPost ,controller.loginPost);
 
 router.get("/logout", controller.logoutPost);
@@ -23,7 +21,10 @@ router.post("/password/otp/:email",validatePassword.optPasswordPost ,controller.
 
 router.post("/password/reset-password",validatePassword.resetPasswordPost , controller.resetPasswordPost);
 
-router.get("/info",authMiddleware.requireAuth ,controller.info);
+router.get("/info/:tokenUser" ,controller.info);
 
+router.patch("/info/edit" ,controller.editInfo);
+
+router.patch("/info/reset-password" ,controller.resetPasswordPatch);
 
 module.exports = router;

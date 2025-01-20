@@ -24,11 +24,12 @@ module.exports.registerPost = async (req, res) => {
   const user = new User(req.body);
   await user.save();
 
-  res.cookie("tokenUser", user.tokenUser);
+  // res.cookie("tokenUser", user.tokenUser);
 
   res.json({
     code: 200,
-    message: "Tạo tài khoản thành công"
+    message: "Tạo tài khoản thành công",
+    tokenUser: user.tokenUser
   });
 }
 
@@ -63,7 +64,7 @@ module.exports.loginPost = async (req, res) => {
   }
 
   const existUserCart = await Cart.findOne({ user_id: user.id });
-  
+
   if (existUserCart) {
     res.clearCookie("cartId");
     res.cookie("cartId", existUserCart.id);
@@ -74,12 +75,13 @@ module.exports.loginPost = async (req, res) => {
       user_id: user.id
     });
   }
-
-  res.cookie("tokenUser", user.tokenUser);
-
+  
   res.json({
     code: 200,
-    message: "Đăng nhập thành công"
+    message: "Đăng nhập thành công",
+    tokenUser: user.tokenUser,
+    fullName: user.fullName,
+    avatar: user.avatar
   });
 }
 
@@ -88,8 +90,9 @@ module.exports.loginPost = async (req, res) => {
 module.exports.logoutPost = async (req, res) => {
   try {
     const user = await User.findOne({ tokenUser: req.cookies.tokenUser, deleted: false });
-    res.clearCookie("tokenUser");
-    res.clearCookie("cartId");
+
+    delete res.locals.tokenUser;
+
     res.json({
       code: 200,
       message: `Đăng xuất Email "${user.email}" thành công`,
@@ -182,12 +185,13 @@ module.exports.optPasswordPost = async (req, res) => {
       return;
     }
 
-    const tokenUser = user.tokenUser;
-    res.cookie("tokenUser", tokenUser); // lưu cookie ở server
+    // const tokenUser = user.tokenUser;
+    // res.cookie("tokenUser", tokenUser); // lưu cookie ở server
 
     res.json({
       code: 200,
-      message: "Xác thực thành công"
+      message: "Xác thực thành công",
+      tokenUser: user.tokenUser
     });
   } catch (error) {
     res.json({
@@ -200,56 +204,153 @@ module.exports.optPasswordPost = async (req, res) => {
 
 // [POST] user/password/reset-password
 module.exports.resetPasswordPost = async (req, res) => {
-  const tokenUser = req.cookies.tokenUser;
-  const password = req.body.password;
-  const comfirmPassword = req.body.comfirmPassword;
+  try {
+    const tokenUser = req.body.tokenUser;
+    const password = req.body.password;
+    const comfirmPassword = req.body.comfirmPassword;
 
-  if (password != comfirmPassword) {
+    if (password != comfirmPassword) {
+      res.json({
+        code: 400,
+        message: "Mật khẩu không khớp nhau"
+      });
+      return;
+    }
+
+
+    const user = await User.findOne({
+      tokenUser: tokenUser
+    }); // check xem có user có token không
+
+
+
+    if (md5(password) == user.password) { // check mật khẩu cũ
+      res.json({
+        code: 400,
+        message: "Mật khẩu mới trùng với mật khẩu cũ"
+      });
+      return;
+    }
+
+    await User.updateOne({
+      tokenUser: tokenUser
+    }, {
+      password: md5(password)
+    });
+
+    res.json({
+      code: 200,
+      message: "Đổi mật khẩu thành công"
+    });
+  } catch (error) {
     res.json({
       code: 400,
-      message: "Mật khẩu không khớp nhau"
+      message: "Lỗi!"
     });
-    return;
   }
-
-  const user = await User.findOne({
-    tokenUser: tokenUser
-  }); // check xem có user có token không
-
-
-
-  if (md5(password) == user.password) { // check mật khẩu cũ
-    res.json({
-      code: 400,
-      message: "Mật khẩu mới trùng với mật khẩu cũ"
-    });
-    return;
-  }
-
-  await User.updateOne({
-    tokenUser: tokenUser
-  }, {
-    password: md5(password)
-  });
-
-  res.json({
-    code: 200,
-    message: "Đổi mật khẩu thành công"
-  });
 }
 
 
-// [GET] /user/info
+// [GET] /user/info/:tokenUser
 module.exports.info = async (req, res) => {
   try {
-    const tokenUser = req.cookies.tokenUser;
-    
+    const tokenUser = req.params.tokenUser;
+
     const user = await User.findOne({ tokenUser: tokenUser }).select("-password -tokenUser");
-    
+
     res.json({
       code: 200,
       message: "Thông tin cá nhân",
       user: user
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi"
+    });
+  }
+}
+
+// [PATCH] /user/info/:tokenUser
+module.exports.editInfo = async (req, res) => {
+  try {
+    const tokenUser = req.body.tokenUser;
+    delete req.body.tokenUser;
+
+    await User.updateOne({
+      tokenUser: tokenUser
+    }, req.body);
+    res.json({
+      code: 200,
+      message: "Cập nhật thông tin thành công!"
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi"
+    });
+  }
+}
+
+// [PATCH] /user/info/:tokenUser
+module.exports.resetPasswordPatch = async (req, res) => {
+  try {
+    const tokenUser = req.body.tokenUser;
+    const passwordOld = req.body.passwordOld;
+    const passwordNew = req.body.passwordNew;
+    const passwordNewComfirm = req.body.passwordNewComfirm;
+
+    const user = await User.findOne({ tokenUser: tokenUser });
+
+    if (!user) {
+      res.json({
+        code: 400,
+        message: "Không tìm thấy user!"
+      });
+      return;
+    }
+
+    if (md5(passwordOld) !== user.password) {
+      res.json({
+        code: 400,
+        message: "Mật khẩu không đúng"
+      });
+      return;
+    }
+
+    if (passwordNew !== passwordNewComfirm) {
+      res.json({
+        code: 400,
+        message: "Mật khẩu không khớp nhau"
+      });
+      return;
+    }
+
+    await User.updateOne({
+      tokenUser: tokenUser
+    }, {
+      password: md5(passwordNew)
+    });
+
+    res.json({
+      code: 200,
+      message: "Cập nhật thành công!"
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi"
+    });
+  }
+}
+
+// [GET] /user/order/list
+module.exports.listOrderGet = async (req, res) => {
+  try {
+    
+    res.json({
+      code: 200,
+      message: "Cập nhật thành công!"
     });
   } catch (error) {
     res.json({

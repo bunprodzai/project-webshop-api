@@ -9,8 +9,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: generateToken.generateToken()
   },
-  phone: String,
+  phone: {
+    type: String,
+    default: ""
+  },
   avatar: String,
+  address: {
+    type: String,
+    default: ""
+  },
   status: {
     type: String,
     default: "active"

@@ -7,6 +7,7 @@ const searchHelper = require("../../../../helpers/search");
 module.exports.index = async (req, res) => {
   if (req.role.permissions.includes("products_view")) {
     const status = req.query.status;
+    const limitItem = req.query.limit;
     const find = {
       deleted: false
     };
@@ -18,7 +19,7 @@ module.exports.index = async (req, res) => {
     // phân trang 
     let initPagination = {
       currentPage: 1,
-      limitItems: 5
+      limitItems: limitItem
     };
     const countProduct = await Product.countDocuments(find);
     const objetPagination = panigationHelper(
@@ -38,10 +39,10 @@ module.exports.index = async (req, res) => {
     // end Tìm kiếm
 
     // sort
-    const sortKey = req.query.sortKey;
-    const sortType = req.query.sortType;
     const sort = {}
-    if (sortKey && sortType) {
+    if (req.query.sortKey && req.query.sortType) {
+      const sortKey = req.query.sortKey;
+      const sortType = req.query.sortType;
       sort[sortKey] = sortType // [] dùng để truyền linh động, còn sort.sortKey là truyền cứng
     }
     // }/api/v1/products?sortKey=price&sortType=asc url để query
@@ -54,7 +55,8 @@ module.exports.index = async (req, res) => {
 
     res.json({
       code: 200,
-      products: products
+      products: products,
+      totalPage: objetPagination.totalPage
     });
   } else {
     res.json({
@@ -68,6 +70,7 @@ module.exports.index = async (req, res) => {
 module.exports.createItem = async (req, res) => {
   try {
     if (req.role.permissions.includes("products_create")) {
+
       req.body.price = parseInt(req.body.price);
       req.body.discountPercentage = parseInt(req.body.discountPercentage);
       req.body.stock = parseInt(req.body.stock);
@@ -97,6 +100,7 @@ module.exports.createItem = async (req, res) => {
       });
     }
   } catch (error) {
+
     res.json({
       code: 400,
       message: "Tạo mới sản phẩm không thành công!"
@@ -121,6 +125,7 @@ module.exports.changeStatus = async (req, res) => {
     if (req.role.permissions.includes("products_edit")) {
       const id = req.params.id;
       const status = req.params.status;
+
 
       const updatedBy = {
         user_Id: req.userAuth.id,

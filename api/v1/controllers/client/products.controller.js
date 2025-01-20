@@ -12,12 +12,12 @@ module.exports.index = async (req, res) => {
     status: "active"
   }).lean().select("-updatedBy -createdAt -updatedAt -createBy");
 
-  const newProducts = productsHelper.priceNewProducts(products);
+  // const newProducts = productsHelper.priceNewProducts(products);
 
   res.json({
     code: 200,
     message: "Lấy danh sách sản phẩm thành công",
-    products: newProducts
+    products: products
   });
 }
 
@@ -69,13 +69,14 @@ module.exports.detail = async (req, res) => {
       slug: slug
     }).lean().select("-updatedBy -createdAt -updatedAt -createBy");
 
-    const productCategory = await ProductCategory.findOne({ _id: record.product_category_id });
+    if (record.product_category_id !== "") {
+      const productCategory = await ProductCategory.findOne({ _id: record.product_category_id });
+      record.titleCategory = productCategory.title;
+      record.slugCategory = productCategory.slug;
+    }
 
-    record.titleCategory = productCategory.title;
-    record.slugCategory = productCategory.slug;
-    
     const newRecord = productsHelper.priceNewProduct(record);
-    
+
     res.json({
       code: 200,
       message: "Lấy chi tiết sản phẩm thành công",

@@ -7,4 +7,6 @@ router.get("/", controller.index);
 
 router.get("/detail/:id", controller.detail);
 
+router.get("/change-status/:status/:code", controller.changeStatus);
+
 module.exports = router;

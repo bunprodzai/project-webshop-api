@@ -6,7 +6,7 @@ module.exports.index = async (req, res) => {
     let find = {
       deleted: false
     }
-
+    
     const records = await Role.find(find);
 
     res.json({

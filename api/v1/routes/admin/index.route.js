@@ -10,6 +10,7 @@ const myAccountRoute = require("./my-account.route");
 const settingRoute = require("./setting-general.route");
 const userRoute = require("./users.route");
 const orderRoute = require("./orders.route");
+const articleRoute = require("./articles.route");
 
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
@@ -35,4 +36,6 @@ module.exports = (app) => {
   app.use(`/api/v1/${prefixAdmin}/users`, authMiddleware.requireAuth, userRoute);
   
   app.use(`/api/v1/${prefixAdmin}/orders`, authMiddleware.requireAuth, orderRoute);
+  
+  app.use(`/api/v1/${prefixAdmin}/articles`, authMiddleware.requireAuth, articleRoute);
 } 

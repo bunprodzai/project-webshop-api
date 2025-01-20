@@ -2,29 +2,13 @@
 const Order = require("../../models/order.model");
 const Product = require("../../models/product.model");
 
-const panigationHelper = require("../../../../helpers/pagination");
 const productHelper = require("../../../../helpers/products");
 
 // [GET] /admin/orders
 module.exports.index = async (req, res) => {
   if (req.role.permissions.includes("orders_view")) {
-    // pagination 
-    let initPagination = {
-      currentPage: 1,
-      limitItems: 5
-    };
-    const countOrder = await Order.countDocuments({});
-    const objetPagination = panigationHelper(
-      initPagination,
-      req.query,
-      countOrder
-    )
-    // end pagination 
-
     let sales = 0;
-
-    const records = await Order.find().lean().limit(objetPagination.limitItems)
-      .skip(objetPagination.skip);
+    const records = await Order.find().lean();
 
     for (const item of records) {
       if (item.products.length > 0) {
@@ -45,8 +29,7 @@ module.exports.index = async (req, res) => {
       code: 200,
       message: "Quản lý đơn hàng",
       records: records,
-      sales: sales,
-      pagination: objetPagination
+      sales: sales
     });
   } else {
     res.json({
@@ -69,8 +52,8 @@ module.exports.detail = async (req, res) => {
 
           const productInfo = await Product.findOne({ _id: productId, deleted: false, status: "active" }).select("title");
 
-          item.priceNew = productHelper.priceNew(item);
-          item.totalPrice = item.priceNew * item.quantity;
+          item.newPrice = ((item.price * (100 - item.discountPercentage)) / 100).toFixed(0);
+          item.totalPrice = item.newPrice * item.quantity;
 
           item.title = productInfo.title;
         }
@@ -81,6 +64,48 @@ module.exports.detail = async (req, res) => {
         message: "Chi tiết đơn hàng",
         record: record
       });
+    } else {
+      res.json({
+        code: 403,
+        message: "Bạn không có quyền truy cập"
+      });
+    }
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi params"
+    });
+  }
+}
+
+// [GET] /admin/orders/change-status/:status/:id
+module.exports.changeStatus = async (req, res) => {
+  try {
+    if (req.role.permissions.includes("orders_view")) {
+      const code = req.params.code;
+      const status = req.params.status;
+
+      const order = await Order.findOne({ code: code, status: "received" });
+      
+      if (order) {
+        if (order.products.length > 0) {
+          for (const product of order.products) {
+            const productId = product.product_id;
+            const productOld = await Product.findOne({ _id: productId });
+            await Product.updateOne({ _id: productId }, { stock: productOld.stock - product.quantity });
+          }
+        }
+        await Order.updateOne({ code: code }, { status: status });
+        res.json({
+          code: 200,
+          message: "Đơn hàng đã hoàn thành"
+        });
+      } else {
+        res.json({
+          code: 400,
+          message: "Đơn hàng không tồn tại"
+        });
+      }
     } else {
       res.json({
         code: 403,

@@ -4,6 +4,7 @@ const SettingGeneral = require("../../models/settings-general.model");
 module.exports.general = async (req, res) => {
   if (req.role.permissions.includes("settings_general")) {
     const setting = await SettingGeneral.find({});
+    
     res.json({
       code: 200,
       message: "Trang cài đặt chung",

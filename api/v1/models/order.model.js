@@ -1,14 +1,25 @@
 const mongoose = require("mongoose");
+const { generateOrd } = require("../../../helpers/generateCodeOrder");
 
 
 const orderSchema = new mongoose.Schema({
-  // user_id: String,
+  user_id: String,
   cart_id: String,
+  code: {
+    type: String,
+    default: generateOrd()
+  },
   userInfo: {
     fullName: String,
     phone: String,
-    address: String
+    address: String,
+    note: String
   },
+  status: {
+    type: String,
+    default: "initialize"
+  },
+  paymentMethod: String,
   products: [
     {
       product_id: String,

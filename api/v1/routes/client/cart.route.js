@@ -3,12 +3,18 @@ const router = express.Router();
 const controller = require("../../controllers/client/cart.controller");
 
 
-router.get("/", controller.index);
+router.get("/get-cart/:cartId", controller.getCart);
 
-router.get("/delete/:idProduct", controller.del);
+router.patch("/delete/:idProduct", controller.del);
 
-router.get("/update/:idProduct/:quantity", controller.update);
+router.patch("/update/:idProduct", controller.update);
 
 router.patch("/add/:productId", controller.addPost);
+
+router.get("/create", controller.create);
+
+router.patch("/update-user/:tokenUser", controller.updateUser);
+
+router.get("/find/:tokenUser", controller.findCartByUserId);
 
 module.exports = router;

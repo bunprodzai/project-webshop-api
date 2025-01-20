@@ -1,7 +1,7 @@
 const User = require("../../models/users.model");
 
 module.exports.inforUser = async (req, res, next) => {
-  const tokenUser = req.cookies.tokenUser;
+  const tokenUser = res.locals.tokenUser;
 
   if (tokenUser) {
     const user = await User.findOne({
@@ -11,7 +11,7 @@ module.exports.inforUser = async (req, res, next) => {
     }).select("-password");
 
     if (user) {
-      req.user = user;
+      res.locals.user = user;
     }
 
   } else {

@@ -88,7 +88,7 @@ module.exports.editPatch = async (req, res) => {
 
       if (exitsEmail) {
         res.json({
-          code: 400,
+          code: 409,
           message: "Email đã tồn tại"
         });
       } else {
