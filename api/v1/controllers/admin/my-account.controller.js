@@ -25,6 +25,7 @@ module.exports.index = async (req, res) => {
 module.exports.editPatch = async (req, res) => {
   try {
     const id = req.userAuth.id;
+
     const exitsEmail = await Account.findOne({
       _id: { $ne: id },
       deleted: false,
@@ -33,35 +34,76 @@ module.exports.editPatch = async (req, res) => {
 
     if (exitsEmail) {
       res.json({
-        code: 400,
+        code: 401,
         message: "Email đã tồn tại",
       });
       return;
-    } else {
-      if (req.body.password) {
-        req.body.password = md5(req.body.password);
-      } else {
-        delete req.body.password;
-      }
-      await Account.updateOne({ _id: id }, req.body);
     }
 
-    const myAccount = await Account.findOne({ _id: id }).select("-password").lean();
-    const roles = await Role.find({ deleted: false });
-    for (const role of roles) {
-      if (role._id == myAccount.role_id) {
-        myAccount.titleRole = role.title;
-      }
-    }
+    await Account.updateOne({ _id: id }, req.body);
+
+
     res.json({
       code: 200,
-      message: "Cập nhật thành công",
-      myAccount: myAccount
+      message: "Cập nhật thành công"
     });
   } catch (error) {
     res.json({
       code: 400,
       message: "Lỗi"
+    });
+  }
+}
+
+// [PATCH] /admin/my-account/reset-password
+module.exports.resetPassword = async (req, res) => {
+  try {
+    const id = req.userAuth.id;
+
+    const passwordOld = req.body.passwordOld;
+    const passwordNew = req.body.passwordNew;
+    const passwordNewComfirm = req.body.passwordNewComfirm;
+    
+    const account = await Account.findOne({ _id: id });
+
+    if (!account) {
+      res.json({
+        code: 400,
+        message: "Không tìm thấy account!"
+      });
+      return;
+    }
+
+    if (md5(passwordOld) !== account.password) {
+      res.json({
+        code: 204,
+        message: "Mật khẩu không đúng!"
+      });
+      return;
+    }
+
+    if (passwordNew !== passwordNewComfirm) {
+      res.json({
+        code: 204,
+        message: "Mật khẩu mới không khớp nhau!"
+      });
+      return;
+    }
+
+    await Account.updateOne({
+      _id: id
+    }, {
+      password: md5(passwordNew)
+    });
+
+    res.json({
+      code: 200,
+      message: "Đổi mật khẩu thành công!"
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi!"
     });
   }
 }

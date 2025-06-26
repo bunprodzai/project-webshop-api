@@ -1,8 +1,9 @@
 const Cart = require("../../models/carts.model");
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
-
-
+const User = require("../../models/users.model");
+const productHelper = require("../../../../helpers/products");
+const sendMailHelper = require("../../../../helpers/sendMail");
 // [GET] /order/detail/:orderId
 module.exports.detailOrder = async (req, res) => {
   try {
@@ -43,7 +44,6 @@ module.exports.orderPost = async (req, res) => {
   try {
     const cartId = req.body.cartId;
     const userInfo = req.body.userInfo;
-    console.log(req.body);
 
     const recordCarts = await Cart.findOne({ _id: cartId });
     const products = [];
@@ -56,7 +56,8 @@ module.exports.orderPost = async (req, res) => {
           product_id: product.product_id,
           price: productInfo.price,
           quantity: product.quantity,
-          discountPercentage: productInfo.discountPercentage
+          discountPercentage: productInfo.discountPercentage,
+          size: product.size
         }
         products.push(objProducts);
       }
@@ -71,10 +72,18 @@ module.exports.orderPost = async (req, res) => {
       const order = new Order(orderObj);
       await order.save();
 
+      // gửi opt qua email user
+      const subject = "Có đơn hàng mới vừa được khởi tạo";
+      const html = `
+          Mã đơn hàng <b>${order.code}</b>
+          Tên khách hàng <b>${order.userInfo.fullName}</b>
+        `
+      sendMailHelper.sendMail("ttanhoa4455@gmail.com", subject, html);
+
       await Cart.updateOne({ _id: cartId }, { products: [] });
       res.json({
         code: 200,
-        message: "Đặt hàng thành công",
+        message: "Đơn hàng đã được tạo, xin vui lòng tiến hành thanh toán",
         codeOrder: order.code,
         products: products
       });
@@ -89,7 +98,7 @@ module.exports.orderPost = async (req, res) => {
   } catch (error) {
     res.json({
       code: 400,
-      message: "Lỗi"
+      message: "Lỗi, vui lòng thử lại"
     });
   }
 }
@@ -104,24 +113,72 @@ module.exports.success = async (req, res) => {
     if (recordOrder) {
       await Order.updateOne({ _id: orderId }, {
         paymentMethod: paymentMethod,
-        status: "received"
+        status: "processing"
       });
+
+      // gửi opt qua email user
+      const subject = "Khách hàng đã xác nhận thanh toán đơn hàng";
+      const html = `
+          <p>Mã đơn hàng <b>${recordOrder.code}</b></p>
+          <p>Tên khách hàng <b>${recordOrder.userInfo.fullName}</b></p>
+          <p>Phương thức thanh toán <b>${paymentMethod}</b></p>
+        `
+      sendMailHelper.sendMail("ttanhoa4455@gmail.com", subject, html);
+      res.json({
+        code: 200,
+        message: "Thanh toán thành công, chúng tôi sẽ liên hệ lại với bạn để xác nhận",
+        recordOrder: recordOrder
+      });
+
     } else {
       res.json({
         code: 404,
         message: "Tài nguyên không tồn tại!"
       });
     }
-
-    res.json({
-      code: 200,
-      message: "Thanh toán thành công, chúng tôi sẽ liên hệ lại với bạn để xác nhận",
-      recordOrder: recordOrder
-    });
   } catch (error) {
     res.json({
       code: 400,
       message: "Lỗi params"
+    });
+  }
+}
+
+module.exports.ordersHistoryByUserId = async (req, res) => {
+  try {
+    const tokenUser = req.params.tokenUser;
+    const user = await User.findOne({ tokenUser: tokenUser }).lean();
+
+    const records = await Order.find({ user_id: user._id.toString() }).lean();
+
+    for (const item of records) {
+      if (item.products.length > 0) {
+        let totalPrice = 0; //
+        let totalQuantity = 0;
+
+        for (const product of item.products) {
+          const priceNew = productHelper.priceNew(product);
+          totalPrice += priceNew * product.quantity;
+          totalQuantity += product.quantity;
+          const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title");
+          product.title = infoProduct.title;
+          product.totalPrice = priceNew * product.quantity;
+        }
+
+        item.totalOrder = totalPrice;
+        item.totalQuantity = totalQuantity;
+      }
+    }
+
+    res.json({
+      code: 200,
+      message: "Lịch sử đơn hàng",
+      records: records
+    });
+  } catch (error) {
+    res.json({
+      code: 400,
+      message: "Lỗi"
     });
   }
 }

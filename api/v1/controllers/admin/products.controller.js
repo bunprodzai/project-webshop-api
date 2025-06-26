@@ -21,6 +21,7 @@ module.exports.index = async (req, res) => {
       currentPage: 1,
       limitItems: limitItem
     };
+
     const countProduct = await Product.countDocuments(find);
     const objetPagination = panigationHelper(
       initPagination,
@@ -68,18 +69,28 @@ module.exports.index = async (req, res) => {
 
 // [POST] /api/v1/products/create-item
 module.exports.createItem = async (req, res) => {
+
   try {
     if (req.role.permissions.includes("products_create")) {
 
       req.body.price = parseInt(req.body.price);
       req.body.discountPercentage = parseInt(req.body.discountPercentage);
-      req.body.stock = parseInt(req.body.stock);
 
       if (!req.body.position) {
         const countItem = await Product.countDocuments({ deleted: false });
         req.body.position = countItem + 1;
       } else {
         req.body.position = parseInt(req.body.position);
+      }
+
+      if (Array.isArray(req.body.sizeStock)) {
+        const totalStock = req.body.sizeStock.reduce((sum, item) => {
+          const parts = item.split("-");
+          const quantity = parseInt(parts[1], 10);
+          return sum + (isNaN(quantity) ? 0 : quantity);
+        }, 0);
+
+        req.body.stock = totalStock;
       }
 
       req.body.createBy = {
@@ -103,7 +114,7 @@ module.exports.createItem = async (req, res) => {
 
     res.json({
       code: 400,
-      message: "Tạo mới sản phẩm không thành công!"
+      message: "Tạo mới sản phẩm không thành công! - " + error
     });
   }
   // /api/v1/products/create-item 
@@ -242,31 +253,35 @@ module.exports.editPatch = async (req, res) => {
     if (req.role.permissions.includes("products_edit")) {
       const id = req.params.id;
 
-      if (req.body.position) {
-        req.body.position = parseInt(req.body.position);
-      }
-      if (req.body.price) {
-        req.body.price = parseInt(req.body.price);
+      ["position", "price", "discountPercentage"].forEach((k) => {
+        if (req.body[k]) req.body[k] = parseInt(req.body[k]);
+      });
+
+      if (Array.isArray(req.body.sizeStock)) {
+        const totalStock = req.body.sizeStock.reduce((sum, item) => {
+          const parts = item.split("-");
+          const quantity = parseInt(parts[1], 10);
+          return sum + (isNaN(quantity) ? 0 : quantity);
+        }, 0);
+
+        req.body.stock = totalStock;
       }
 
-      if (req.body.stock) {
-        req.body.stock = parseInt(req.body.stock);
-      }
-
-      if (req.body.discountPercentage) {
-        req.body.discountPercentage = parseInt(req.body.discountPercentage);
-      }
+      const { ...dataEdit } = req.body;
 
       const updatedBy = {
         user_Id: req.userAuth.id,
         updatedAt: new Date()
       }
 
-      const dataEdit = req.body;
+      const updateQuery = {
+        $set: dataEdit,            // mọi field khác
+        $push: { updatedBy }       // log lịch sử
+      };
 
       await Product.updateOne({
         _id: id
-      }, { ...dataEdit, $push: { updatedBy: updatedBy } });
+      }, updateQuery);
 
       res.json({
         code: 200,
@@ -371,23 +386,31 @@ module.exports.deleteMultiItem = async (req, res) => {
 
 // [GET] /admin/products/detail/:id
 module.exports.detail = async (req, res) => {
-  try {
-    const id = req.params.id;
+  if (req.role.permissions.includes("products_view")) {
+    try {
+      const id = req.params.id;
 
-    const product = await Product.findOne({
-      deleted: false,
-      _id: id
+      const product = await Product.findOne({
+        deleted: false,
+        _id: id
+      });
+
+      res.json({
+        code: 200,
+        message: "Lấy chi tiết sản phẩm thành công",
+        product: product
+      })
+    } catch (error) {
+      res.json({
+        code: 400,
+        message: "Lỗi params"
+      })
+    }
+  } else {
+    res.json({
+      code: 403,
+      message: "Bạn không có quyền này!"
     });
-
-    res.json({
-      code: 200,
-      message: "Lấy chi tiết sản phẩm thành công",
-      product: product
-    })
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Lỗi params"
-    })
   }
+
 }

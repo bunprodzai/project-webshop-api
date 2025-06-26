@@ -17,12 +17,17 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  thumbnail: String,
+  thumbnail: String, 
+  images: [String], // Mảng chứa nhiều ảnh
   status: String,
   position: Number,
   product_category_id: {
     type: String,
     default: ""
+  },
+  sizeStock: {
+    type: [String], // Mảng chứa các chuỗi định dạng "size-quantity"
+    default: []
   },
   featured: String,
   createBy: {

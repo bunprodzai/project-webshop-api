@@ -78,7 +78,7 @@ module.exports.createPost = async (req, res) => {
 // [PATCH] /api/v1/accounts/edit/:id
 module.exports.editPatch = async (req, res) => {
   try {
-    if (req.role.permissions.includes("accounts_view")) {
+    if (req.role.permissions.includes("accounts_edit")) {
       const id = req.params.id;
       const exitsEmail = await Account.findOne({
         _id: { $ne: id },
@@ -198,3 +198,4 @@ module.exports.delete = async (req, res) => {
     });
   }
 }
+

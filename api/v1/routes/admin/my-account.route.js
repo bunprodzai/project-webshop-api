@@ -10,5 +10,5 @@ router.patch("/edit",
   validate.editPatch,
   controller.editPatch
 );
-
+router.patch("/reset-password", controller.resetPassword);
 module.exports = router;

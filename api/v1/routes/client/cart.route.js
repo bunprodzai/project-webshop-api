@@ -9,7 +9,7 @@ router.patch("/delete/:idProduct", controller.del);
 
 router.patch("/update/:idProduct", controller.update);
 
-router.patch("/add/:productId", controller.addPost);
+router.patch("/add/:productId", controller.addPatch);
 
 router.get("/create", controller.create);
 

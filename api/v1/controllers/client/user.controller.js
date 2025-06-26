@@ -63,25 +63,21 @@ module.exports.loginPost = async (req, res) => {
     return;
   }
 
-  const existUserCart = await Cart.findOne({ user_id: user.id });
+  // const existUserCart = await Cart.findOne({ user_id: user.id });
 
-  if (existUserCart) {
-    res.clearCookie("cartId");
-    res.cookie("cartId", existUserCart.id);
-  } else {
-    await Cart.updateOne({
-      id: req.cookies.cartId
-    }, {
-      user_id: user.id
-    });
-  }
+  // let cartId;
+
+  // if (existUserCart) {
+  //  cartId =  existUserCart.id;
+  // }
   
   res.json({
     code: 200,
     message: "Đăng nhập thành công",
     tokenUser: user.tokenUser,
     fullName: user.fullName,
-    avatar: user.avatar
+    avatar: user.avatar,
+    // cartId: cartId
   });
 }
 
@@ -275,7 +271,7 @@ module.exports.info = async (req, res) => {
 module.exports.editInfo = async (req, res) => {
   try {
     const tokenUser = req.body.tokenUser;
-    delete req.body.tokenUser;
+    // delete req.body.tokenUser;
 
     await User.updateOne({
       tokenUser: tokenUser

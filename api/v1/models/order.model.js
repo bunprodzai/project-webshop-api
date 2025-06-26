@@ -13,7 +13,8 @@ const orderSchema = new mongoose.Schema({
     fullName: String,
     phone: String,
     address: String,
-    note: String
+    note: String,
+    email: String
   },
   status: {
     type: String,
@@ -25,7 +26,8 @@ const orderSchema = new mongoose.Schema({
       product_id: String,
       price: Number,
       quantity: Number,
-      discountPercentage: Number
+      discountPercentage: Number,
+      size: String
     }
   ]
 },
