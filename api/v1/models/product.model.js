@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  sex: String,
   thumbnail: String, 
   images: [String], // Mảng chứa nhiều ảnh
   status: String,
@@ -25,6 +26,7 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  categoryTitle: String,
   sizeStock: {
     type: [String], // Mảng chứa các chuỗi định dạng "size-quantity"
     default: []

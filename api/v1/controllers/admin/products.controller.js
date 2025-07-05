@@ -1,4 +1,5 @@
 const Product = require("../../models/product.model");
+const ProductCategory = require("../../models/product.category.model");
 const panigationHelper = require("../../../../helpers/pagination");
 const searchHelper = require("../../../../helpers/search");
 
@@ -73,14 +74,21 @@ module.exports.createItem = async (req, res) => {
   try {
     if (req.role.permissions.includes("products_create")) {
 
-      req.body.price = parseInt(req.body.price);
-      req.body.discountPercentage = parseInt(req.body.discountPercentage);
+      req.body.price = parseFloat(req.body.price);
+      req.body.discountPercentage = parseFloat(req.body.discountPercentage);
 
       if (!req.body.position) {
         const countItem = await Product.countDocuments({ deleted: false });
         req.body.position = countItem + 1;
       } else {
         req.body.position = parseInt(req.body.position);
+      }
+
+      if (req.body.product_category_id !== "") {
+        const category = await ProductCategory.findOne({
+          _id: req.body.product_category_id,
+        });
+        req.body.categoryTitle = category.title;
       }
 
       if (Array.isArray(req.body.sizeStock)) {
@@ -254,8 +262,15 @@ module.exports.editPatch = async (req, res) => {
       const id = req.params.id;
 
       ["position", "price", "discountPercentage"].forEach((k) => {
-        if (req.body[k]) req.body[k] = parseInt(req.body[k]);
+        if (req.body[k]) req.body[k] = parseFloat(req.body[k]);
       });
+
+      if (req.body.product_category_id !== "") {
+        const category = await ProductCategory.findOne({
+          _id: req.body.product_category_id,
+        });
+        req.body.categoryTitle = category.title;
+      }
 
       if (Array.isArray(req.body.sizeStock)) {
         const totalStock = req.body.sizeStock.reduce((sum, item) => {

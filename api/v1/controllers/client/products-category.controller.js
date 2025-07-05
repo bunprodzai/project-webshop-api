@@ -8,7 +8,7 @@ module.exports.index = async (req, res) => {
   const productsCategory = await ProductCategory.find({
     deleted: false,
     status: "active"
-  }).lean().select("-updatedAt -createdAt -description -thumbnail -status -position -deleted -__v");
+  }).lean().select("-updatedAt -createdAt -description -status -position -deleted -__v");
 
   res.json({
     code: 200,

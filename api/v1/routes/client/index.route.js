@@ -8,6 +8,7 @@ const checkoutRoute = require("./checkout.route");
 const settingRoute = require("./setting-general.route");
 const articleRoute = require("./article.route");
 const productCategoryRoute = require("./product-category.route");
+const chatAi = require("./chatai.route");
 
 module.exports = (app) => {
 
@@ -21,4 +22,5 @@ module.exports = (app) => {
   app.use(`/api/v1/settings`, settingRoute);
   app.use(`/api/v1/articles`, articleRoute);
   app.use(`/api/v1/products-category`, productCategoryRoute);
+  app.use(`/api/v1/chatbot`, chatAi);
 }

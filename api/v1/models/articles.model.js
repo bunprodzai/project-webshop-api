@@ -5,11 +5,15 @@ mongoose.plugin(slug);
 
 const articleSchema = new mongoose.Schema({
   title: String,
+  excerpt: String,
   description: String,
   thumbnail: String,
   status: String,
   position: Number,
+  readTime: String,
   featured: String,
+  category: String,
+  tags: [String],
   slug: { type: String, slug: "title", unique: true },
   deleted: {
     type: Boolean,
