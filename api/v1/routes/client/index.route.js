@@ -9,9 +9,11 @@ const settingRoute = require("./setting-general.route");
 const articleRoute = require("./article.route");
 const productCategoryRoute = require("./product-category.route");
 const chatAi = require("./chatai.route");
+const vnPay = require("./vn-pay.route");
 
 module.exports = (app) => {
 
+  app.use(`/api/v1/vn-pay`, vnPay);
 
   app.use(`/api/v1/cart`, cartRoute);
   app.use(`/api/v1/products`, productRoute);

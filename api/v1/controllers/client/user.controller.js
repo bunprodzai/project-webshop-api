@@ -1,10 +1,13 @@
 const User = require("../../models/users.model");
-const Cart = require("../../models/carts.model");
 const ForgotPassword = require("../../models/forgot-password.model");
-
+const productHelper = require("../../../../helpers/products");
 const generateHelper = require("../../../../helpers/generateNumber");
 const sendMailHelper = require("../../../../helpers/sendMail");
 const md5 = require("md5")
+
+const jwt = require('jsonwebtoken');
+const Product = require("../../models/product.model");
+const Order = require("../../models/order.model");
 
 // [POST] /user/register
 module.exports.registerPost = async (req, res) => {
@@ -24,63 +27,106 @@ module.exports.registerPost = async (req, res) => {
   const user = new User(req.body);
   await user.save();
 
-  // res.cookie("tokenUser", user.tokenUser);
+  const token = jwt.sign(
+    { id: user._id },
+    process.env.JWT_SECRET,
+    { expiresIn: '1d' }
+  );
 
   res.json({
     code: 200,
     message: "Tạo tài khoản thành công",
-    tokenUser: user.tokenUser
+    tokenUser: token
   });
 }
 
 
 // [POST] /user/login
+// module.exports.loginPost = async (req, res) => {
+
+//   const user = await User.findOne({ email: req.body.email, deleted: false });
+
+//   if (!user) {
+//     res.json({
+//       code: 400,
+//       message: "Email không tồn tại!"
+//     });
+//     return;
+//   }
+
+//   if (md5(req.body.password) != user.password) {
+//     res.json({
+//       code: 400,
+//       message: "Sai mật khẩu!"
+//     });
+//     return;
+//   }
+
+//   if (user.status != "active") {
+//     res.json({
+//       code: 400,
+//       message: "Tài khoản đã bị khóa!"
+//     });
+//     return;
+//   }
+
+//   res.json({
+//     code: 200,
+//     message: "Đăng nhập thành công",
+//     tokenUser: user.tokenUser,
+//     fullName: user.fullName,
+//     avatar: user.avatar
+//   });
+// }
+
+// [POST] /user/login
+
 module.exports.loginPost = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email, deleted: false });
 
-  const user = await User.findOne({ email: req.body.email, deleted: false });
+    if (!user) {
+      res.json({
+        code: 401,
+        message: "Email không tồn tại!"
+      });
+      return;
+    }
 
-  if (!user) {
+    if (md5(password) != user.password) {
+      res.json({
+        code: 400,
+        message: "Sai mật khẩu!"
+      });
+      return;
+    }
+
+    if (user.status != "active") {
+      res.json({
+        code: 400,
+        message: "Tài khoản đã bị khóa!"
+      });
+      return;
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
     res.json({
-      code: 400,
-      message: "Email không tồn tại!"
+      code: 200,
+      message: "Đăng nhập thành công",
+      tokenUser: token,
+      fullName: user.fullName,
+      avatar: user.avatar
     });
-    return;
+  } catch (err) {
+    res.status(500).json({ code: 500, message: err.message });
   }
-
-  if (md5(req.body.password) != user.password) {
-    res.json({
-      code: 400,
-      message: "Sai mật khẩu!"
-    });
-    return;
-  }
-
-  if (user.status != "active") {
-    res.json({
-      code: 400,
-      message: "Tài khoản đã bị khóa!"
-    });
-    return;
-  }
-
-  // const existUserCart = await Cart.findOne({ user_id: user.id });
-
-  // let cartId;
-
-  // if (existUserCart) {
-  //  cartId =  existUserCart.id;
-  // }
-  
-  res.json({
-    code: 200,
-    message: "Đăng nhập thành công",
-    tokenUser: user.tokenUser,
-    fullName: user.fullName,
-    avatar: user.avatar,
-    // cartId: cartId
-  });
 }
-
 
 // [GET] /user/logout
 module.exports.logoutPost = async (req, res) => {
@@ -181,13 +227,16 @@ module.exports.optPasswordPost = async (req, res) => {
       return;
     }
 
-    // const tokenUser = user.tokenUser;
-    // res.cookie("tokenUser", tokenUser); // lưu cookie ở server
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
     res.json({
       code: 200,
       message: "Xác thực thành công",
-      tokenUser: user.tokenUser
+      tokenUser: token
     });
   } catch (error) {
     res.json({
@@ -199,12 +248,13 @@ module.exports.optPasswordPost = async (req, res) => {
 
 
 // [POST] user/password/reset-password
+// đổi mật khẩu của phần quên mật khẩu
 module.exports.resetPasswordPost = async (req, res) => {
   try {
-    const tokenUser = req.body.tokenUser;
+    const userId = req.user.id;
     const password = req.body.password;
     const comfirmPassword = req.body.comfirmPassword;
-
+    
     if (password != comfirmPassword) {
       res.json({
         code: 400,
@@ -213,14 +263,11 @@ module.exports.resetPasswordPost = async (req, res) => {
       return;
     }
 
-
     const user = await User.findOne({
-      tokenUser: tokenUser
+      _id: userId
     }); // check xem có user có token không
 
-
-
-    if (md5(password) == user.password) { // check mật khẩu cũ
+    if (md5(password) === user.password) { // check mật khẩu cũ
       res.json({
         code: 400,
         message: "Mật khẩu mới trùng với mật khẩu cũ"
@@ -229,7 +276,7 @@ module.exports.resetPasswordPost = async (req, res) => {
     }
 
     await User.updateOne({
-      tokenUser: tokenUser
+      _id: userId
     }, {
       password: md5(password)
     });
@@ -239,6 +286,8 @@ module.exports.resetPasswordPost = async (req, res) => {
       message: "Đổi mật khẩu thành công"
     });
   } catch (error) {
+    console.log(error.message);
+    
     res.json({
       code: 400,
       message: "Lỗi!"
@@ -246,13 +295,12 @@ module.exports.resetPasswordPost = async (req, res) => {
   }
 }
 
-
-// [GET] /user/info/:tokenUser
+// [GET] /user/info
 module.exports.info = async (req, res) => {
   try {
-    const tokenUser = req.params.tokenUser;
+    const userId = req.user.id;
 
-    const user = await User.findOne({ tokenUser: tokenUser }).select("-password -tokenUser");
+    const user = await User.findOne({ _id: userId }).select("-password -tokenUser");
 
     res.json({
       code: 200,
@@ -267,14 +315,13 @@ module.exports.info = async (req, res) => {
   }
 }
 
-// [PATCH] /user/info/:tokenUser
+// [PATCH] /user/info/edit
 module.exports.editInfo = async (req, res) => {
   try {
-    const tokenUser = req.body.tokenUser;
-    // delete req.body.tokenUser;
+    const userId = req.user.id;
 
     await User.updateOne({
-      tokenUser: tokenUser
+      _id: userId
     }, req.body);
     res.json({
       code: 200,
@@ -291,12 +338,13 @@ module.exports.editInfo = async (req, res) => {
 // [PATCH] /user/info/:tokenUser
 module.exports.resetPasswordPatch = async (req, res) => {
   try {
-    const tokenUser = req.body.tokenUser;
+    const userId = req.user.id;
+    
     const passwordOld = req.body.passwordOld;
     const passwordNew = req.body.passwordNew;
     const passwordNewComfirm = req.body.passwordNewComfirm;
 
-    const user = await User.findOne({ tokenUser: tokenUser });
+    const user = await User.findOne({ _id: userId });
 
     if (!user) {
       res.json({
@@ -323,7 +371,7 @@ module.exports.resetPasswordPatch = async (req, res) => {
     }
 
     await User.updateOne({
-      tokenUser: tokenUser
+      _id: userId
     }, {
       password: md5(passwordNew)
     });
@@ -340,13 +388,36 @@ module.exports.resetPasswordPatch = async (req, res) => {
   }
 }
 
-// [GET] /user/order/list
-module.exports.listOrderGet = async (req, res) => {
+//[GET] /history-order
+module.exports.ordersHistoryByUserId = async (req, res) => {
   try {
-    
+    const userId = req.user.id;
+
+    const records = await Order.find({ user_id: userId }).lean();
+
+    for (const item of records) {
+      if (item.products.length > 0) {
+        let totalPrice = 0; //
+        let totalQuantity = 0;
+
+        for (const product of item.products) {
+          const priceNew = productHelper.priceNew(product);
+          totalPrice += priceNew * product.quantity;
+          totalQuantity += product.quantity;
+          const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title");
+          product.title = infoProduct.title;
+          product.totalPrice = priceNew * product.quantity;
+        }
+
+        item.totalOrder = totalPrice;
+        item.totalQuantity = totalQuantity;
+      }
+    }
+
     res.json({
       code: 200,
-      message: "Cập nhật thành công!"
+      message: "Lịch sử đơn hàng",
+      records: records
     });
   } catch (error) {
     res.json({

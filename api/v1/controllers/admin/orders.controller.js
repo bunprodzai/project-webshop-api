@@ -167,6 +167,8 @@ module.exports.changeStatus = async (req, res) => {
           }
         }
 
+        await Order.updateOne({code: code}, {status: "success"})
+
         res.json({
           code: 200,
           message: "Đơn hàng đã được hoàn thành"

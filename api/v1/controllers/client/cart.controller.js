@@ -57,7 +57,7 @@ module.exports.getCart = async (req, res) => {
       return res.json({
         code: 200,
         message: "Giỏ hàng",
-        recordsCart: recordsCart,
+        recordsCart: recordsCart
       });
     } else {
       return res.json({
@@ -70,18 +70,15 @@ module.exports.getCart = async (req, res) => {
     res.status(500).json({
       code: 500,
       message: "Đã xảy ra lỗi trong khi lấy giỏ hàng",
-      error: error.message,
+      error: error.message
     });
   }
 };
 
 // [GET] /cart/find/:tokenUser
 module.exports.findCartByUserId = async (req, res) => {
-  const tokenUser = req.params.tokenUser;
-
-  const user = await User.findOne({ tokenUser: tokenUser });
-
-  const cart = await Cart.findOne({ user_id: user._id });
+  const userId = req.user.id;
+  const cart = await Cart.findOne({ user_id: userId });
 
   if (cart) {
     res.json({
@@ -113,19 +110,18 @@ module.exports.create = async (req, res) => {
 
 }
 
-// [PATCH] /cart/update-user/:tokenUser
+// [PATCH] /cart/update-user
 module.exports.updateUser = async (req, res) => {
   try {
-    const tokenUser = req.params.tokenUser;
+    const userId = req.user.id;
     const cartId = req.body.cartId;
 
-    const cart = await Cart.findOne({ _id: cartId });
+    const cart = await Cart.findOne({ user_id: cartId });
     if (cart) {
-      const user = await User.findOne({ tokenUser: tokenUser });
       await Cart.updateOne({
         _id: cartId
       }, {
-        user_id: user._id
+        user_id: userId
       });
     } else {
       res.json({
@@ -152,7 +148,6 @@ module.exports.addPatch = async (req, res) => {
     const quantity = parseInt(req.body.quantity);
     const cartId = req.body.cartId;
     const size = req.body.size;
-    console.log(req.body);
 
     const cart = await Cart.findOne({ _id: cartId });
 
@@ -228,7 +223,6 @@ module.exports.del = async (req, res) => {
     const productId = req.params.idProduct;
     const cartId = req.body.cartId;
     const size = req.body.size;
-    console.log(size);
 
     await Cart.updateOne({
       _id: cartId

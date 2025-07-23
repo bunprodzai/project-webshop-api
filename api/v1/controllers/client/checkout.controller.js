@@ -1,9 +1,10 @@
 const Cart = require("../../models/carts.model");
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
-const User = require("../../models/users.model");
-const productHelper = require("../../../../helpers/products");
+
 const sendMailHelper = require("../../../../helpers/sendMail");
+
+
 // [GET] /order/detail/:orderId
 module.exports.detailOrder = async (req, res) => {
   try {
@@ -105,6 +106,7 @@ module.exports.orderPost = async (req, res) => {
 
 module.exports.success = async (req, res) => {
   try {
+    // chỉ dành cho thanh toán bằng cod
     const orderId = req.params.orderId;
     const paymentMethod = req.body.paymentMethod;
 
@@ -140,45 +142,6 @@ module.exports.success = async (req, res) => {
     res.json({
       code: 400,
       message: "Lỗi params"
-    });
-  }
-}
-
-module.exports.ordersHistoryByUserId = async (req, res) => {
-  try {
-    const tokenUser = req.params.tokenUser;
-    const user = await User.findOne({ tokenUser: tokenUser }).lean();
-
-    const records = await Order.find({ user_id: user._id.toString() }).lean();
-
-    for (const item of records) {
-      if (item.products.length > 0) {
-        let totalPrice = 0; //
-        let totalQuantity = 0;
-
-        for (const product of item.products) {
-          const priceNew = productHelper.priceNew(product);
-          totalPrice += priceNew * product.quantity;
-          totalQuantity += product.quantity;
-          const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title");
-          product.title = infoProduct.title;
-          product.totalPrice = priceNew * product.quantity;
-        }
-
-        item.totalOrder = totalPrice;
-        item.totalQuantity = totalQuantity;
-      }
-    }
-
-    res.json({
-      code: 200,
-      message: "Lịch sử đơn hàng",
-      records: records
-    });
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Lỗi"
     });
   }
 }

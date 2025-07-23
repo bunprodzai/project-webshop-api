@@ -1,17 +1,18 @@
 const Account = require("../../models/account.model");
 const md5 = require("md5");
 const Role = require("../../models/roles.model");
+const jwt = require("jsonwebtoken");
 
 // [POST] /api/v1/admin/login
 module.exports.loginPost = async (req, res) => {
   try {
-    const email = req.body.email;
-    const password = req.body.password;
+    const {email, password} = req.body;
 
     const user = await Account.findOne({
       email: email,
       deleted: false
     });
+
     if (!user) {
       res.json({
         code: 400,
@@ -35,11 +36,17 @@ module.exports.loginPost = async (req, res) => {
       });
       return;
     }
-    const permissions = await Role.findOne({ _id: user.role_id });
-    const token = user.token;
-    // res.cookie("token", token);
-    // res.setHeader("Authorization", `Bearer ${token}`);
 
+    const permissions = await Role.findOne({ _id: user.role_id });
+    console.log(user.id);
+    
+    const token = jwt.sign(
+      { id: user.id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+    console.log("token " + token);
+    
     res.json({
       code: 200,
       message: "Đăng nhập thành công",
@@ -59,36 +66,38 @@ module.exports.loginPost = async (req, res) => {
 
 
 // [POST] /api/v1/admin/permissionsPost
-module.exports.permissionsPost = async (req, res) => {
-  try {
-    const token = req.body.token;
-    const user = await Account.findOne({ token: token });
+// module.exports.permissionsPost = async (req, res) => {
+//   try {
+//     const token = req.body.token;
+//     const user = await Account.findOne({ token: token });
 
-    if (user) {
-      const permissions = await Role.findOne({ _id: user.role_id });
-      res.json({
-        code: 200,
-        message: "Permissions",
-        permissions: permissions.permissions
-      });
-    } else {
-      res.json({
-        code: 204,
-        message: "Không tìm  thấy Account!"
-      });
-    }
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Lỗi!"
-    });
-  }
-  // /api/v1/auth/login
-  // {
-  //   "email": "trucle251@gmail.com",
-  //     "password": "251"
-  // }
-}
+//     if (user) {
+//       const permissions = await Role.findOne({ _id: user.role_id });
+//       res.json({
+//         code: 200,
+//         message: "Permissions",
+//         permissions: permissions.permissions
+//       });
+//     } else {
+//       res.json({
+//         code: 204,
+//         message: "Không tìm  thấy Account!"
+//       });
+//     }
+//   } catch (error) {
+//     res.json({
+//       code: 400,
+//       message: "Lỗi!"
+//     });
+//   }
+//   // /api/v1/auth/login
+//   // {
+//   //   "email": "trucle251@gmail.com",
+//   //     "password": "251"
+//   // }
+// }
+
+
 // [GET] /api/v1/auth/logout
 module.exports.logoutPost = async (req, res) => {
   res.clearCookie("token");

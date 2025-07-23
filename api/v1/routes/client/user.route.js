@@ -8,23 +8,25 @@ const validatePassword = require("../../validates/client/forgot-password");
 
 const authMiddleware = require("../../middlewares/client/auth.middleware");
 
+router.post("/register", validateRegister.registerPost, controller.registerPost);
 
-router.post("/register",validateRegister.registerPost ,controller.registerPost);
-
-router.post("/login",validateLogin.loginPost ,controller.loginPost);
+router.post("/login", validateLogin.loginPost, controller.loginPost);
 
 router.get("/logout", controller.logoutPost);
 
-router.post("/password/forgot",validatePassword.forgotPasswordPost ,controller.forgotPasswordPost);
+router.post("/password/forgot", validatePassword.forgotPasswordPost, controller.forgotPasswordPost);
 
-router.post("/password/otp/:email",validatePassword.optPasswordPost ,controller.optPasswordPost);
+router.post("/password/otp/:email", validatePassword.optPasswordPost, controller.optPasswordPost);
 
-router.post("/password/reset-password",validatePassword.resetPasswordPost , controller.resetPasswordPost);
+router.post("/password/reset-password", authMiddleware.requireAuth, validatePassword.resetPasswordPost, controller.resetPasswordPost);
 
-router.get("/info/:tokenUser" ,controller.info);
+router.get("/info", authMiddleware.requireAuth, controller.info);
 
-router.patch("/info/edit" ,controller.editInfo);
+router.patch("/info/edit", authMiddleware.requireAuth, controller.editInfo);
 
-router.patch("/info/reset-password" ,controller.resetPasswordPatch);
+router.patch("/info/reset-password", authMiddleware.requireAuth, controller.resetPasswordPatch);
+
+router.get("/history-order", authMiddleware.requireAuth, controller.ordersHistoryByUserId);
+
 
 module.exports = router;

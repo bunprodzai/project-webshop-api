@@ -19,6 +19,11 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     default: "initialize"
+    // initialize
+    // processing
+    // received
+    // success
+    // cancelled
   },
   paymentMethod: String,
   products: [
