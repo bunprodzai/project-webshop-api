@@ -10,8 +10,11 @@ const articleRoute = require("./article.route");
 const productCategoryRoute = require("./product-category.route");
 const chatAi = require("./chatai.route");
 const vnPay = require("./vn-pay.route");
+const connectDb = require("../../middlewares/connectMongo.middware");
 
 module.exports = (app) => {
+
+  app.use(connectDb.connectMongo);
 
   app.use(`/api/v1/vn-pay`, vnPay);
 

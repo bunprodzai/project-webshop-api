@@ -9,7 +9,7 @@ const cookieParser = require("cookie-parser");
 // const session = require('express-session');
 
 // hàm hết nối database 
-database.connect();
+// database.connect();
 
 app.use(bodyParser.json()); // dùng để patch json lên 
 

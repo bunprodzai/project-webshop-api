@@ -14,9 +14,13 @@ const articleRoute = require("./articles.route");
 
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
+const connectDb = require("../../middlewares/connectMongo.middware");
 
 module.exports = (app) => {
   const prefixAdmin = "admin";
+
+  app.use(connectDb.connectMongo);
+
   app.use(`/api/v1/${prefixAdmin}/products`, authMiddleware.requireAuth, productRoute);
 
   app.use(`/api/v1/${prefixAdmin}/products-category`, authMiddleware.requireAuth, productCategoryRoute);
