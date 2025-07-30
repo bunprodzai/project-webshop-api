@@ -3,6 +3,7 @@ const router = express.Router();
 const controller = require("../../controllers/admin/products.controller");
 // const authAdminMiddleware = require("../middlewares/authAdmin.middleware");
 const validate = require("../../validates/admin/product.validate");
+
 // đăng nhập vào và gửi token lên thông qua req.headers.authorization mới vào được
 router.get("/", controller.index);
 

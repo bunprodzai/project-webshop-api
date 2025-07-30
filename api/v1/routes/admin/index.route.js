@@ -11,6 +11,8 @@ const settingRoute = require("./setting-general.route");
 const userRoute = require("./users.route");
 const orderRoute = require("./orders.route");
 const articleRoute = require("./articles.route");
+const bannerRoute = require("./banners.route");
+const voucherRoute = require("./vouchers.route");
 
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
@@ -42,4 +44,9 @@ module.exports = (app) => {
   app.use(`/api/v1/${prefixAdmin}/orders`, authMiddleware.requireAuth, orderRoute);
   
   app.use(`/api/v1/${prefixAdmin}/articles`, authMiddleware.requireAuth, articleRoute);
+
+  app.use(`/api/v1/${prefixAdmin}/banners`, authMiddleware.requireAuth, bannerRoute);
+
+  app.use(`/api/v1/${prefixAdmin}/vouchers`, authMiddleware.requireAuth, voucherRoute);
+
 } 
