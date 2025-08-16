@@ -1,6 +1,7 @@
 const ProductCategory = require("../../models/product.category.model");
 
-// [GET] /api/v1/products
+
+// [GET] /api/v1/products-category
 module.exports.index = async (req, res) => {
   if (!req.role.permissions.includes("products_category_view")) {
     return res.status(403).json({
@@ -38,10 +39,10 @@ module.exports.index = async (req, res) => {
       message: "Đã xảy ra lỗi khi lấy danh mục sản phẩm!",
     });
   }
-}; // /api/v1/products-category
+};
+
 // [POST] /api/v1/products-category/create
 module.exports.createPost = async (req, res) => {
-
   try {
     if (req.role.permissions.includes("products_category_create")) {
       if (!req.body.position) {
@@ -98,7 +99,7 @@ module.exports.createPost = async (req, res) => {
 }
 
 // [PATCH] /api/v1/products-category/edit/:id
-module.exports.editPacth = async (req, res) => {
+module.exports.editPatch = async (req, res) => {
   try {
     if (req.role.permissions.includes("products_category_edit")) {
       const id = req.params.id;
@@ -185,47 +186,6 @@ module.exports.deleteItem = async (req, res) => {
   }
 }
 
-// [DELETE] /api/v1/products-category/deletemulti-item
-module.exports.deleteMultiItem = async (req, res) => {
-  try {
-    if (req.role.permissions.includes("products_category_del")) {
-      const { ids, key } = req.body;
-      console.log(ids);
-
-      switch (key) {
-        case "delete":
-          await ProductCategory.updateMany({
-            _id: { $in: ids }
-          }, {
-            deleted: true,
-            deletedAt: new Date()
-          });
-          res.json({
-            code: 200,
-            message: "Xóa thành công"
-          });
-          break;
-        default:
-          res.json({
-            code: 400,
-            message: "Không tồn tại"
-          });
-          break;
-      }
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền xóa sản phẩm!"
-      });
-    }
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Không tồn tại"
-    });
-  }
-}
-
 // [GET] /api/v1/products-category/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {
@@ -256,3 +216,44 @@ module.exports.changeStatus = async (req, res) => {
     });
   }
 }
+
+// [DELETE] /api/v1/products-category/deletemulti-item
+// module.exports.deleteMultiItem = async (req, res) => {
+//   try {
+//     if (req.role.permissions.includes("products_category_del")) {
+//       const { ids, key } = req.body;
+//       console.log(ids);
+
+//       switch (key) {
+//         case "delete":
+//           await ProductCategory.updateMany({
+//             _id: { $in: ids }
+//           }, {
+//             deleted: true,
+//             deletedAt: new Date()
+//           });
+//           res.json({
+//             code: 200,
+//             message: "Xóa thành công"
+//           });
+//           break;
+//         default:
+//           res.json({
+//             code: 400,
+//             message: "Không tồn tại"
+//           });
+//           break;
+//       }
+//     } else {
+//       res.json({
+//         code: 403,
+//         message: "Bạn không có quyền xóa sản phẩm!"
+//       });
+//     }
+//   } catch (error) {
+//     res.json({
+//       code: 400,
+//       message: "Không tồn tại"
+//     });
+//   }
+// }

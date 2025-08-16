@@ -1,5 +1,6 @@
 const Role = require("../../models/roles.model");
 
+
 // [GET] /api/v1/roles
 module.exports.index = async (req, res) => {
   if (req.role.permissions.includes("roles_view")) {
@@ -211,6 +212,7 @@ module.exports.deleteItem = async (req, res) => {
   }
 }
 
+// [GET] /api/v1/roles/detail/:id
 module.exports.detail = async (req, res) => {
   try {
     if (req.role.permissions.includes("roles_view")){

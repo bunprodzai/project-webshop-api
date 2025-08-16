@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/vouchers.controller");
-// const validate = require("../../validates/admin/accounts.validate")
 
 router.get("/", controller.index);
 
-// router.post("/create", validate.createPost, controller.createPost);
+router.post("/create", controller.createPost);
 
-// router.patch("/edit/:id", validate.editPatch, controller.editPatch);
+router.patch("/edit/:id", controller.editPatch);
 
-// router.delete("/delete/:id", controller.delete);
+router.get("/change-status/:status/:id", controller.changeStatus);
 
-// router.get("/detail/:id", controller.detail);
+router.delete("/delete/:id", controller.delDelete);
+
 
 module.exports = router;

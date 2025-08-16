@@ -42,7 +42,7 @@ module.exports.index = async (req, res) => {
   }
 }
 
-// [GET] /admin/orders
+// [GET] /admin/orders/detail/:id
 module.exports.detail = async (req, res) => {
   try {
     if (req.role.permissions.includes("orders_view")) {
@@ -87,7 +87,7 @@ module.exports.detail = async (req, res) => {
   }
 }
 
-// [GET] /admin/orders/change-status/:status/:id
+// [GET] /admin/orders/change-status/:status/:code
 module.exports.changeStatus = async (req, res) => {
   try {
     if (req.role.permissions.includes("orders_view")) {
@@ -144,6 +144,7 @@ module.exports.changeStatus = async (req, res) => {
           <br/>
           <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
           <p><b>Tổng tiền đơn hàng</b> ${totalPrice}</p>
+          <a href="http://localhost:3000/order/checkout/pay/success/${order.code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
           <p>Trân trọng,<br/>Cửa hàng XYZ</p>
           `;
         sendMailHelper.sendMail(order.userInfo.email, subject, html);

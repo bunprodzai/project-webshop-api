@@ -124,7 +124,7 @@ module.exports.editPatch = async (req, res) => {
   // }
 }
 
-// [PATCH] /admin/accounts/change-status/:status/:id
+// [GET] /admin/accounts/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {
     if (req.role.permissions.includes("accounts_edit")) {
@@ -162,7 +162,7 @@ module.exports.changeStatus = async (req, res) => {
   }
 }
 
-// [PATCH] /admin/accounts/delete/:id
+// [DELETE] /admin/accounts/delete/:id
 module.exports.delete = async (req, res) => {
   try {
     if (req.role.permissions.includes("accounts_del")) {

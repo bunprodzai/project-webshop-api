@@ -27,7 +27,6 @@ module.exports.category = async (req, res) => {
   try {
     // dùng để tìm kiếm danh sách sản phẩm theo danh mục
     const slugCategory = req.params.slugCategory;
-    console.log(req.query);
     
     const category = await ProductCategory.findOne({
       slug: slugCategory,

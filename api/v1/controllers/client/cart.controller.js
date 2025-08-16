@@ -16,6 +16,7 @@ module.exports.getCart = async (req, res) => {
         code: 400,
         message: "Giỏ hàng không hợp lệ",
       });
+      return;
     }
 
     // Tìm giỏ hàng
@@ -66,11 +67,9 @@ module.exports.getCart = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
+    res.json({
       code: 500,
-      message: "Đã xảy ra lỗi trong khi lấy giỏ hàng",
-      error: error.message
+      message: "Đã xảy ra lỗi trong khi lấy giỏ hàng"
     });
   }
 };

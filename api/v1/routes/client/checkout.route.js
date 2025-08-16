@@ -7,6 +7,8 @@ router.get("/order/detail/:code", controller.detailOrder);
 
 router.post("/order", controller.orderPost);
 
+router.post("/check-voucher", controller.checkVoucher);
+
 router.patch("/success/:orderId", controller.success);
 
 module.exports = router;

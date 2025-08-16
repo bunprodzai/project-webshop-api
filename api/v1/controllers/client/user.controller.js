@@ -8,6 +8,7 @@ const md5 = require("md5")
 const jwt = require('jsonwebtoken');
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
+const { calculateTotalPrice } = require("../../../../helpers/calculateTotal");
 
 // [POST] /user/register
 module.exports.registerPost = async (req, res) => {
@@ -397,19 +398,16 @@ module.exports.ordersHistoryByUserId = async (req, res) => {
 
     for (const item of records) {
       if (item.products.length > 0) {
-        let totalPrice = 0; //
         let totalQuantity = 0;
 
         for (const product of item.products) {
           const priceNew = productHelper.priceNew(product);
-          totalPrice += priceNew * product.quantity;
           totalQuantity += product.quantity;
           const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title");
           product.title = infoProduct.title;
           product.totalPrice = priceNew * product.quantity;
         }
 
-        item.totalOrder = totalPrice;
         item.totalQuantity = totalQuantity;
       }
     }

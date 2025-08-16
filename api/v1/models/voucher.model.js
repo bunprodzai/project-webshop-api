@@ -5,7 +5,7 @@ mongoose.plugin(slug);
 
 const voucherSchema = new mongoose.Schema({
   title: String,
-  description: String,
+  excerpt: String,
   start_date: {
     type: Date,
     default: Date.now

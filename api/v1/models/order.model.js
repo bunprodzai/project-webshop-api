@@ -5,9 +5,11 @@ const { generateOrd } = require("../../../helpers/generateCodeOrder");
 const orderSchema = new mongoose.Schema({
   user_id: String,
   cart_id: String,
+  voucher_code: String,
   code: {
     type: String,
-    default: generateOrd()
+    unique: true,
+    default: () => generateOrd()
   },
   userInfo: {
     fullName: String,
@@ -34,7 +36,8 @@ const orderSchema = new mongoose.Schema({
       discountPercentage: Number,
       size: String
     }
-  ]
+  ],
+  totalOrder: Number
 },
   {
     timestamps: true,

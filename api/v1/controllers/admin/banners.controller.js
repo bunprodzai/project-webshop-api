@@ -10,6 +10,7 @@ module.exports.index = async (req, res) => {
 
       const status = req.query.status;
       const limitItem = req.query.limit;
+
       const find = {
         deleted: false
       };
@@ -76,10 +77,10 @@ module.exports.index = async (req, res) => {
   }
 }
 
-// [POST]
+// [POST] /api/v1/banners/create
 module.exports.createPost = async (req, res) => {
   try {
-    if (req.role.permissions.includes("banners_view")) {
+    if (req.role.permissions.includes("banners_create")) {
       if (req.body.position == "") {
         const countItem = await Banner.countDocuments({ deleted: false });
         req.body.position = countItem + 1;
@@ -113,7 +114,7 @@ module.exports.createPost = async (req, res) => {
   }
 }
 
-// [PATCH]
+// [PATCH] /api/v1/banners/edit/:id
 module.exports.editPatch = async (req, res) => {
   try {
     if (req.role.permissions.includes("banners_edit")) {
@@ -161,7 +162,7 @@ module.exports.editPatch = async (req, res) => {
 
 }
 
-// [DELETE]
+// [DELETE] /api/v1/banners/delete/:id
 module.exports.delDelete = async (req, res) => {
   try {
     if (req.role.permissions.includes("banners_del")) {
@@ -176,7 +177,7 @@ module.exports.delDelete = async (req, res) => {
         _id: id
       }, {
         deleted: true,
-        deteledAt: new Date(),
+        deletedAt: new Date(),
         deletedBy: deletedBy
       });
 
@@ -199,7 +200,7 @@ module.exports.delDelete = async (req, res) => {
 
 }
 
-// [GET]
+// [GET] /api/v1/banners/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {
     if (req.role.permissions.includes("banners_edit")) {

@@ -1,7 +1,7 @@
 const Article = require("../../models/articles.model");
 const Account = require("../../models/account.model");
 
-// [GET] /article/
+// [GET] /articles
 module.exports.index = async (req, res) => {
   try {
     if (req.role.permissions.includes("articles_view")) {
@@ -46,6 +46,7 @@ module.exports.index = async (req, res) => {
   }
 }
 
+// [POST] /articles/create
 module.exports.createPost = async (req, res) => {
   try {
     if (req.role.permissions.includes("articles_view")) {
@@ -82,6 +83,7 @@ module.exports.createPost = async (req, res) => {
   }
 }
 
+// [PATCH]] /articles/edit/:id
 module.exports.editPatch = async (req, res) => {
   try {
     if (req.role.permissions.includes("articles_edit")) {
@@ -125,6 +127,7 @@ module.exports.editPatch = async (req, res) => {
   }
 }
 
+// [GET] /articles/delete/:id
 module.exports.detail = async (req, res) => {
   try {
     if (req.role.permissions.includes("articles_view")) {
@@ -151,6 +154,7 @@ module.exports.detail = async (req, res) => {
   }
 }
 
+// [DELETE] /articles/detail/:id
 module.exports.delete = async (req, res) => {
   try {
     if (req.role.permissions.includes("articles_del")) {

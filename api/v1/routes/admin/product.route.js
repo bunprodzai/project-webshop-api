@@ -9,10 +9,7 @@ router.get("/", controller.index);
 
 router.get("/change-status/:status/:id", controller.changeStatus);
 
-router.patch("/change-multi", controller.changeMulti);
-
 router.delete("/delete-item/:id", controller.deleteItem);
-router.delete("/deletemulti-item", controller.deleteMultiItem);
 
 router.post("/create-item", validate.createPost, controller.createItem);
 
@@ -20,5 +17,6 @@ router.patch("/edit-item/:id", controller.editPatch);
 
 router.get("/detail/:id", controller.detail);
 
-
+// router.delete("/deletemulti-item", controller.deleteMultiItem);
+// router.patch("/change-multi", controller.changeMulti);
 module.exports = router;

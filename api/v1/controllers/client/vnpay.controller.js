@@ -114,6 +114,7 @@ module.exports.checkPayment = async (req, res) => {
           <br/>
           <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
           <p><b>Tổng tiền đơn hàng</b> ${totalPrice}</p>
+          <a href="http://localhost:3000/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
           <p>Trân trọng,<br/>Cửa hàng XYZ</p>
           `;
     sendMailHelper.sendMail(order.userInfo.email, subject2, html2);

@@ -7,7 +7,7 @@ const Order = require("../../models/order.model");
 const productHelper = require("../../../../helpers/products");
 const { latestRevenue } = require("../../../../helpers/latest-revenue");
 
-
+// [GET] /api/v1/dashboard
 module.exports.dashboard = async (req, res) => {
 
   // const startOfMonth = new Date(2025, 5, 1); // Tháng 6 (tháng tính từ 0 -> 11)
@@ -51,6 +51,8 @@ module.exports.dashboard = async (req, res) => {
   });
 }
 
+// Tăng trưởng đơn hàng
+// [GET] /api/v1/dashboard/order/percentGrowth/:time
 module.exports.orderGrowth = async (req, res) => {
   const [month, year] = req.params.time.split("-").map(Number);
   const currentMonth = new Date(year, month, 1); // Tháng gủi lên trừ đi 1
@@ -80,6 +82,8 @@ module.exports.orderGrowth = async (req, res) => {
   });
 }
 
+// Tăng trưởng sản phẩm
+// [GET] /api/v1/dashboard/product/percentGrowth/:time
 module.exports.productGrowth = async (req, res) => {
   const [month, year] = req.params.time.split("-").map(Number);
   const currentMonth = new Date(year, month, 1); // Tháng gủi lên trừ đi 1
@@ -111,6 +115,8 @@ module.exports.productGrowth = async (req, res) => {
   });
 }
 
+// Tăng trưởng người dùng
+// [GET] /api/v1/dashboard/user/percentGrowth/:time
 module.exports.userGrowth = async (req, res) => {
   const [month, year] = req.params.time.split("-").map(Number);
   const currentMonth = new Date(year, month, 1); // Tháng gủi lên trừ đi 1
@@ -142,6 +148,8 @@ module.exports.userGrowth = async (req, res) => {
   });
 }
 
+// Danh mục tăng trưởng
+// [GET] /api/v1/dashboard/category/percentGrowth/:time
 module.exports.categoryGrowth = async (req, res) => {
   const [month, year] = req.params.time.split("-").map(Number);
   const currentMonth = new Date(year, month, 1); // Tháng gủi lên trừ đi 1
@@ -173,6 +181,8 @@ module.exports.categoryGrowth = async (req, res) => {
   });
 }
 
+// đơn hàng trong tháng hiện tại
+// [GET] /api/v1/dashboard/recent-orders
 module.exports.recentOrders = async (req, res) => {
   try {
     // Lấy ngày đầu và ngày cuối tháng hiện tại
@@ -195,12 +205,11 @@ module.exports.recentOrders = async (req, res) => {
           const priceNew = productHelper.priceNew(product);
           totalPrice += priceNew * product.quantity;
         }
-        
+
         item.totalOrder = totalPrice;
-        console.log(item);
       }
     }
-    
+
 
     res.status(200).json({
       code: 200,
@@ -216,6 +225,8 @@ module.exports.recentOrders = async (req, res) => {
   }
 };
 
+// doanh thu trong 4 tháng gần nhất
+// [GET] /api/v1/dashboard/latest-revenue
 module.exports.latestRevenue = async (req, res) => {
   try {
     const now = new Date();
@@ -245,6 +256,8 @@ module.exports.latestRevenue = async (req, res) => {
   }
 };
 
+// thời gian bắt đầu của trang web
+// [GET] /api/v1/dashboard/timestart  
 module.exports.timeStart = async (req, res) => {
   try {
     const firstProduct = await Product.findOne().sort({ createdAt: 1 });
@@ -281,4 +294,176 @@ module.exports.timeStart = async (req, res) => {
     });
   }
 
+}
+
+// Danh mục bán chạy
+// [GET] /api/v1/dashboard/top-selling-category/:time
+module.exports.getTopSellingCategories = async (req, res) => {
+  try {
+    const [month, year] = req.params.time.split("-").map(Number);
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+    const result = await Order.aggregate([
+      {
+        $match: {
+          status: "success",
+          createdAt: { $gte: startDate, $lt: endDate }
+        }
+      },
+      { $unwind: "$products" },
+      {
+        $addFields: {
+          "products.product_id": {
+            $convert: {
+              input: "$products.product_id",
+              to: "objectId",
+              onError: null,
+              onNull: null
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.product_id",
+          foreignField: "_id",
+          as: "productInfo"
+        }
+      },
+      { $unwind: "$productInfo" },
+      {
+        $addFields: {
+          "productInfo.product_category_id": {
+            $convert: {
+              input: "$productInfo.product_category_id",
+              to: "objectId",
+              onError: null,
+              onNull: null
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "products-categorys",
+          localField: "productInfo.product_category_id",
+          foreignField: "_id",
+          as: "categoryInfo"
+        }
+      },
+      { $unwind: "$categoryInfo" },
+      {
+        $group: {
+          _id: "$categoryInfo._id",
+          categoryTitle: { $first: "$categoryInfo.title" },
+          totalQuantity: { $sum: "$products.quantity" }
+        }
+      },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 5 }
+    ]);
+
+    if (!result.length) {
+      return res.status(200).json({ message: "Không có dữ liệu trong tháng này" });
+    }
+
+    res.status(200).json({
+      code: 200,
+      result: result
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi server", error });
+  }
+};
+
+// sản phẩm bán chạy
+// [GET] /api/v1/dashboard/top-selling-product/:time
+module.exports.getTopSellingProducts = async (req, res) => {
+  try {
+    const [month, year] = req.params.time.split("-").map(Number);
+
+    const startDate = new Date(year, month - 1, 1);
+    const endDate = new Date(year, month, 1);
+
+    const result = await Order.aggregate([
+      {
+        $match: {
+          status: "success", // chỉ tính đơn đã hoàn thành
+          createdAt: { $gte: startDate, $lt: endDate }
+        }
+      },
+      { $unwind: "$products" },
+      {
+        $addFields: {
+          "products.product_id": {
+            $convert: {
+              input: "$products.product_id",
+              to: "objectId",
+              onError: null,
+              onNull: null
+            }
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.product_id",
+          foreignField: "_id",
+          as: "productInfo"
+        }
+      },
+      { $unwind: "$productInfo" },
+      {
+        $group: {
+          _id: "$productInfo._id",
+          title: { $first: "$productInfo.title" },
+          totalSold: { $sum: "$products.quantity" }
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 5 } // top 5
+    ]);
+
+    if (!result.length) {
+      return res.status(200).json({ message: "Không có dữ liệu trong tháng này" });
+    }
+
+    res.status(200).json({
+      code: 200,
+      result: result
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi server", error });
+  }
+};
+
+// Hàng tồn kho thấp
+// [GET] /api/v1/dashboard/low-stock-products
+module.exports.getLowStockProducts = async (req, res) => {
+  try {
+    const result = await Product.find({ stock: { $lt: 10 } }).select(" _id title stock");
+    
+    if (!result.length) {
+      return res.status(200).json({
+        code: 204,
+        message: "Không có sản phẩm nào tồn kho thấp"
+      });
+    }
+
+    res.status(200).json({
+      code: 200,
+      result: result
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi server", error });
+  }
 }

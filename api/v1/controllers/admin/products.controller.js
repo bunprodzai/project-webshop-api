@@ -70,7 +70,6 @@ module.exports.index = async (req, res) => {
 
 // [POST] /api/v1/products/create-item
 module.exports.createItem = async (req, res) => {
-
   try {
     if (req.role.permissions.includes("products_create")) {
 
@@ -177,84 +176,6 @@ module.exports.changeStatus = async (req, res) => {
   // bên phía client sẽ gửi yêu cầu lên params : /api/v1/products/change-status/active/669f264330dd29a6f8ad7bc3
 }
 
-// [PATCH] /api/v1/products/change-multi
-module.exports.changeMulti = async (req, res) => {
-  try {
-    if (req.role.permissions.includes("products_edit")) {
-      const { ids, key, value } = req.body;
-
-      const updatedBy = {
-        user_Id: req.userAuth.id,
-        updatedAt: new Date()
-      }
-
-      switch (key) {
-        case "status":
-          await Product.updateMany({
-            _id: { $in: ids }
-          }, {
-            status: value,
-            $push: { updatedBy: updatedBy }
-          });
-          res.json({
-            code: 200,
-            message: "Cập nhập trạng thái thành công"
-          });
-          break;
-        case "position":
-          for (const item of ids) {
-            let [id, pos] = item.split("-");
-            pos = parseInt(pos);
-            await Product.updateOne({
-              _id: id
-            }, {
-              position: pos,
-              $push: { updatedBy: updatedBy }
-            });
-          };
-          res.json({
-            code: 200,
-            message: "Cập nhập vị trí thành công thành công"
-          });
-          break;
-        default:
-          res.json({
-            code: 400,
-            message: "Không tồn tại"
-          });
-          break;
-      }
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền chỉnh sửa sản phẩm!"
-      });
-    }
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Không tồn tại"
-    });
-  }
-  // /api/v1/products/change-multi
-  // {
-  // "ids": [
-  //     "669f264330dd29a6f8ad7bc3-3",
-  //     "669f264330dd29a6f8ad7bc4-4"
-  // ],
-  // "key": "position"
-  // nếu muốn thay đổi position thì không gửi value mà gửi vị trí muốn thay đổi cạnh id
-  // "value": "active" 
-  // nếu muốn thay đổi status thì value
-  //     "ids": [
-  //         "669f264330dd29a6f8ad7bc3",
-  //         "669f264330dd29a6f8ad7bc4"
-  //     ],
-  //     "key": "status",
-  //     "value": "inactive" 
-  // }
-}
-
 // [PATCH] /api/v1/products/edit-item/:id
 module.exports.editPatch = async (req, res) => {
   try {
@@ -353,52 +274,6 @@ module.exports.deleteItem = async (req, res) => {
   }
 }
 
-// [DELETE] /api/v1/products/deletemulti-item
-module.exports.deleteMultiItem = async (req, res) => {
-  try {
-    if (req.role.permissions.includes("products_del")) {
-      const { ids, key } = req.body;
-
-      const deletedBy = {
-        user_Id: req.userAuth.id,
-        deletedAt: new Date()
-      }
-
-      switch (key) {
-        case "delete":
-          await Product.updateMany({
-            _id: { $in: ids }
-          }, {
-            deleted: true,
-            deletedAt: new Date(),
-            deletedBy: deletedBy
-          });
-          res.json({
-            code: 200,
-            message: "Xóa thành công"
-          });
-          break;
-        default:
-          res.json({
-            code: 400,
-            message: "Không tồn tại"
-          });
-          break;
-      }
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền xóa sản phẩm!"
-      });
-    }
-  } catch (error) {
-    res.json({
-      code: 400,
-      message: "Không tồn tại"
-    });
-  }
-}
-
 // [GET] /admin/products/detail/:id
 module.exports.detail = async (req, res) => {
   if (req.role.permissions.includes("products_view")) {
@@ -429,3 +304,127 @@ module.exports.detail = async (req, res) => {
   }
 
 }
+
+// [DELETE] /api/v1/products/deletemulti-item
+// module.exports.deleteMultiItem = async (req, res) => {
+//   try {
+//     if (req.role.permissions.includes("products_del")) {
+//       const { ids, key } = req.body;
+
+//       const deletedBy = {
+//         user_Id: req.userAuth.id,
+//         deletedAt: new Date()
+//       }
+
+//       switch (key) {
+//         case "delete":
+//           await Product.updateMany({
+//             _id: { $in: ids }
+//           }, {
+//             deleted: true,
+//             deletedAt: new Date(),
+//             deletedBy: deletedBy
+//           });
+//           res.json({
+//             code: 200,
+//             message: "Xóa thành công"
+//           });
+//           break;
+//         default:
+//           res.json({
+//             code: 400,
+//             message: "Không tồn tại"
+//           });
+//           break;
+//       }
+//     } else {
+//       res.json({
+//         code: 403,
+//         message: "Bạn không có quyền xóa sản phẩm!"
+//       });
+//     }
+//   } catch (error) {
+//     res.json({
+//       code: 400,
+//       message: "Không tồn tại"
+//     });
+//   }
+// }
+
+// [PATCH] /api/v1/products/change-multi
+// module.exports.changeMulti = async (req, res) => {
+//   try {
+//     if (req.role.permissions.includes("products_edit")) {
+//       const { ids, key, value } = req.body;
+
+//       const updatedBy = {
+//         user_Id: req.userAuth.id,
+//         updatedAt: new Date()
+//       }
+
+//       switch (key) {
+//         case "status":
+//           await Product.updateMany({
+//             _id: { $in: ids }
+//           }, {
+//             status: value,
+//             $push: { updatedBy: updatedBy }
+//           });
+//           res.json({
+//             code: 200,
+//             message: "Cập nhập trạng thái thành công"
+//           });
+//           break;
+//         case "position":
+//           for (const item of ids) {
+//             let [id, pos] = item.split("-");
+//             pos = parseInt(pos);
+//             await Product.updateOne({
+//               _id: id
+//             }, {
+//               position: pos,
+//               $push: { updatedBy: updatedBy }
+//             });
+//           };
+//           res.json({
+//             code: 200,
+//             message: "Cập nhập vị trí thành công thành công"
+//           });
+//           break;
+//         default:
+//           res.json({
+//             code: 400,
+//             message: "Không tồn tại"
+//           });
+//           break;
+//       }
+//     } else {
+//       res.json({
+//         code: 403,
+//         message: "Bạn không có quyền chỉnh sửa sản phẩm!"
+//       });
+//     }
+//   } catch (error) {
+//     res.json({
+//       code: 400,
+//       message: "Không tồn tại"
+//     });
+//   }
+//   // /api/v1/products/change-multi
+//   // {
+//   // "ids": [
+//   //     "669f264330dd29a6f8ad7bc3-3",
+//   //     "669f264330dd29a6f8ad7bc4-4"
+//   // ],
+//   // "key": "position"
+//   // nếu muốn thay đổi position thì không gửi value mà gửi vị trí muốn thay đổi cạnh id
+//   // "value": "active" 
+//   // nếu muốn thay đổi status thì value
+//   //     "ids": [
+//   //         "669f264330dd29a6f8ad7bc3",
+//   //         "669f264330dd29a6f8ad7bc4"
+//   //     ],
+//   //     "key": "status",
+//   //     "value": "inactive" 
+//   // }
+// }

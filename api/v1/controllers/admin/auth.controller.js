@@ -3,7 +3,7 @@ const md5 = require("md5");
 const Role = require("../../models/roles.model");
 const jwt = require("jsonwebtoken");
 
-// [POST] /api/v1/admin/login
+// [POST] /api/v1/admin/auth/login
 module.exports.loginPost = async (req, res) => {
   try {
     const {email, password} = req.body;
@@ -38,14 +38,12 @@ module.exports.loginPost = async (req, res) => {
     }
 
     const permissions = await Role.findOne({ _id: user.role_id });
-    console.log(user.id);
     
     const token = jwt.sign(
       { id: user.id },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    console.log("token " + token);
     
     res.json({
       code: 200,

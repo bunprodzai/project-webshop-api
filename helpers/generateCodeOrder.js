@@ -21,6 +21,6 @@ module.exports.generateOrd = () => {
   const minutes = pad(now.getMinutes());
   const seconds = pad(now.getSeconds());
 
-  const orderCode = `ORD${day}${hours}${minutes}${seconds}${month}${year}`;
+  const orderCode = `ORD${hours}${minutes}${seconds}${day}${month}${year}`;
   return orderCode;
 };

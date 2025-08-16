@@ -3,7 +3,7 @@ const User = require("../../models/users.model");
 const md5 = require("md5");
 
 
-// [GET] /admin/accounts
+// [GET] /admin/users
 module.exports.index = async (req, res) => {
   if (req.role.permissions.includes("users_view")) {
     const find = {
@@ -24,7 +24,7 @@ module.exports.index = async (req, res) => {
   }
 }
 
-// [PATCH] /admin/users/change-status/:status/:id
+// [GET] /admin/users/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   try {
     if (req.role.permissions.includes("users_edit")) {
@@ -60,7 +60,7 @@ module.exports.changeStatus = async (req, res) => {
   }
 }
 
-// [PATCH] /admin/delete
+// [DELETE] /admin/users/delete/:idUser
 module.exports.delete = async (req, res) => {
   try {
     if (req.role.permissions.includes("users_del")) {
@@ -95,7 +95,7 @@ module.exports.delete = async (req, res) => {
   }
 }
 
-// [GET] /admin/detail/:idUser
+// [GET] /admin/users/detail/:idUser
 module.exports.detail = async (req, res) => {
   try {
     if (req.role.permissions.includes("users_view")) {
