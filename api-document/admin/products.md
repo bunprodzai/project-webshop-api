@@ -43,10 +43,12 @@ API tạo mới sản phẩm. Yêu cầu quyền `products_create`.
   description: string,
   price: number,
   discountPercentage: number,
-  stock: number,
   status: string,
   position?: number,
+  sex: string
   thumbnail: string,
+  images: string[],
+  featured: string,
   product_category_id?: string,
   sizeStock?: string[] // Ví dụ: ["S-10", "M-5"]
 }
@@ -131,10 +133,12 @@ API chỉnh sửa sản phẩm. Yêu cầu quyền `products_edit`.
   description: string,
   price: number,
   discountPercentage: number,
-  stock: number,
   status: string,
   position?: number,
+  sex: string
   thumbnail: string,
+  images: string[],
+  featured: string,
   product_category_id?: string,
   sizeStock?: string[] // Ví dụ: ["S-10", "M-5"]
 }

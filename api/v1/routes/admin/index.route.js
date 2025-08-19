@@ -14,7 +14,6 @@ const articleRoute = require("./articles.route");
 const bannerRoute = require("./banners.route");
 const voucherRoute = require("./vouchers.route");
 
-
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
 const connectDb = require("../../middlewares/connectMongo.middware");
 

@@ -8,7 +8,6 @@ const md5 = require("md5")
 const jwt = require('jsonwebtoken');
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
-const { calculateTotalPrice } = require("../../../../helpers/calculateTotal");
 
 // [POST] /user/register
 module.exports.registerPost = async (req, res) => {

@@ -15,12 +15,6 @@ API DOCUMENTS
 | **GET** | `/articles/`             | Lấy danh sách bài viết |
 | **GET** | `/articles/detail/:slug` | Lấy chi tiết bài viết  |
 
-### `GET /articles/`
-**Mô tả:**  
-...
-
----
-
 ### 3. Banners
 | Method  | Endpoint                       | Mô tả                                |
 | ------- | ------------------------------ | ------------------------------------ |
@@ -98,12 +92,21 @@ API DOCUMENTS
 
 ## 📌 Admin || '/api/v1/admin'
 
+### 🔑 Yêu cầu xác thực
+Tất cả API trong nhóm **Admin** bắt buộc phải gửi kèm **token** xác thực danh tính qua header:
+
+**Request Header:**
+```http
+Authorization: Bearer <token>
+```
+---
+
 ### 1. Auth 
 | Method   | Endpoint      | Mô tả     |
 | -------- | ------------- | --------- |
 | **POST** | `/auth/login` | Đăng nhập |
 
-> Xem thêm chi tiết tại [products.md](./admin/auth.md.md)
+> Xem thêm chi tiết tại [auth.md](./admin/auth.md.md)
 
 ### 2. Products
 | Method     | Endpoint                              | Mô tả                                            |
@@ -126,7 +129,7 @@ API DOCUMENTS
 | **POST**   | `/products-category/create`                    | Thêm mới danh mục                                |
 | **PATCH**  | `/products-category/edit/:id`                  | Chỉnh sửa danh mục theo id                       |
 
-> Xem thêm chi tiết tại [products.md](./admin/products-category.md)
+> Xem thêm chi tiết tại [products-category.md](./admin/products-category.md)
 
 ### 4. Role
 | Method     | Endpoint                 | Mô tả                             |
@@ -138,7 +141,7 @@ API DOCUMENTS
 | **PATCH**  | `/roles/permissions`     | Cập nhật quyền hạn của quyền      |
 | **DELETE** | `/roles/delete-item/:id` | Xóa quyền theo id                 |
 
-> Xem thêm chi tiết tại [products.md](./admin/role.md)
+> Xem thêm chi tiết tại [roles.md](./admin/roles.md)
 
 ### 5. Accounts
 | Method     | Endpoint                              | Mô tả                                   |
@@ -149,7 +152,7 @@ API DOCUMENTS
 | **GET**    | `/accounts/change-status/:status/:id` | Thay đổi trạng thái tài khoản nhân viên |
 | **DELETE** | `/accounts/delete/:id`                | Xóa tài khoản nhân viên theo id         |
 
-> Xem thêm chi tiết tại [products.md](./admin/accounts.md)
+> Xem thêm chi tiết tại [accounts.md](./admin/accounts.md)
 
 ### 6. Dashboard
 | Method  | Endpoint                                  | Mô tả                                                      |
@@ -166,7 +169,7 @@ API DOCUMENTS
 | **GET** | `/dashboard/top-selling-product/:time`    | Lấy sản phẩm bán chạy nhất theo thời gian                  |
 | **GET** | `/dashboard/low-stock-products`           | Lấy danh sách sản phẩm sắp hết hàng                        |
 
-> Xem thêm chi tiết tại [products.md](./admin/dashboard.md)
+> Xem thêm chi tiết tại [dashboard.md](./admin/dashboard.md)
 
 ### 7. My-account
 | Method    | Endpoint          | Mô tả                         |
@@ -175,7 +178,7 @@ API DOCUMENTS
 | **PATCH** | `/edit`           | Chỉnh sửa thông tin tài khoản |
 | **PATCH** | `/reset-password` | Đặt lại mật khẩu tài khoản    |
 
-> Xem thêm chi tiết tại [products.md](./admin/my-account.md)
+> Xem thêm chi tiết tại [my-account.md](./admin/my-account.md)
 
 ### 8. Settings
 | Method    | Endpoint   | Mô tả                            |
@@ -183,7 +186,7 @@ API DOCUMENTS
 | **GET**   | `/general` | Lấy thông tin cài đặt chung      |
 | **PATCH** | `/general` | Cập nhật thông tin cài đặt chung |
 
-> Xem thêm chi tiết tại [products.md](./admin/settings.md)
+> Xem thêm chi tiết tại [settings.md](./admin/settings.md)
 
 ### 9. Users
 | Method     | Endpoint                     | Mô tả                                     |
@@ -193,7 +196,7 @@ API DOCUMENTS
 | **DELETE** | `/delete/:idUser`            | Xóa người dùng theo ID                    |
 | **GET**    | `/detail/:idUser`            | Lấy thông tin chi tiết người dùng theo ID |
 
-> Xem thêm chi tiết tại [products.md](./admin/users.md)
+> Xem thêm chi tiết tại [users.md](./admin/users.md)
 
 ### 10. Orders
 | Method  | Endpoint                       | Mô tả                                    |
@@ -202,7 +205,7 @@ API DOCUMENTS
 | **GET** | `/detail/:id`                  | Lấy thông tin chi tiết đơn hàng theo ID  |
 | **GET** | `/change-status/:status/:code` | Thay đổi trạng thái đơn hàng theo mã đơn |
 
-> Xem thêm chi tiết tại [products.md](./admin/orders.md)
+> Xem thêm chi tiết tại [orders.md](./admin/orders.md)
 
 ### 11. Articles
 | Method     | Endpoint      | Mô tả                                   |
@@ -213,7 +216,7 @@ API DOCUMENTS
 | **DELETE** | `/delete/:id` | Xóa sản phẩm theo ID                    |
 | **GET**    | `/detail/:id` | Lấy thông tin chi tiết sản phẩm theo ID |
 
-> Xem thêm chi tiết tại [products.md](./admin/articles.md)
+> Xem thêm chi tiết tại [articles.md](./admin/articles.md)
 
 ### 12. Banners
 | Method     | Endpoint                     | Mô tả                         |
@@ -224,7 +227,7 @@ API DOCUMENTS
 | **GET**    | `/change-status/:status/:id` | Thay đổi trạng thái quảng cáo |
 | **DELETE** | `/delete/:id`                | Xóa quảng cáo theo ID         |
 
-> Xem thêm chi tiết tại [products.md](./admin/banners.md)
+> Xem thêm chi tiết tại [banners.md](./admin/banners.md)
 
 ### 13. Vouchers
 | Method     | Endpoint                     | Mô tả                       |
@@ -235,4 +238,4 @@ API DOCUMENTS
 | **GET**    | `/change-status/:status/:id` | Thay đổi trạng thái voucher |
 | **DELETE** | `/delete/:id`                | Xóa voucher theo ID         |
 
-> Xem thêm chi tiết tại [products.md](./admin/vouchers.md)
+> Xem thêm chi tiết tại [vouchers.md](./admin/vouchers.md)

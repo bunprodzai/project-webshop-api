@@ -68,7 +68,7 @@ module.exports.resetPassword = async (req, res) => {
 
     if (!account) {
       res.json({
-        code: 400,
+        code: 401,
         message: "Không tìm thấy account!"
       });
       return;
