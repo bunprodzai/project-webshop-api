@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
     unique: true,
     default: () => generateOrd()
   },
+  shippingFee: Number,
   userInfo: {
     fullName: String,
     phone: String,

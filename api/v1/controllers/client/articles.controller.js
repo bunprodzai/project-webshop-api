@@ -10,12 +10,12 @@ module.exports.index = async (req, res) => {
       code: 200,
       message: "Trả về kết quả tìm kiếm thành công",
       articleFeatured: articleFeatured,
-      articles: articles
+      data: articles
     });
   } catch (error) {
     res.json({
       code: 400,
-      message: "Lỗi"
+      message: {error: error.message}
     });
   }
 }
@@ -28,7 +28,7 @@ module.exports.detail = async (req, res) => {
     res.json({
       code: 200,
       message: "Trả về kết quả tìm kiếm thành công",
-      article: article
+      data: article
     });
   } catch (error) {
     res.json({

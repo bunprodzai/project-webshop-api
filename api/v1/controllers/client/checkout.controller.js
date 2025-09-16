@@ -1,7 +1,7 @@
 const Cart = require("../../models/carts.model");
 const Product = require("../../models/product.model");
 const Order = require("../../models/order.model");
-
+const ShippingSetting = require("../../models/shippingSetting.model");
 const sendMailHelper = require("../../../../helpers/sendMail");
 const Voucher = require("../../models/voucher.model");
 const { calculateTotalPrice } = require("../../../../helpers/calculateTotal");
@@ -21,18 +21,22 @@ module.exports.detailOrder = async (req, res) => {
         const productInfo = await Product.findOne({ _id: productId, deleted: false, status: "active" }).select("title thumbnail price slug discountPercentage");
 
         const priceNew = ((productInfo.price * (100 - productInfo.discountPercentage)) / 100).toFixed(0);
-
         item.totalPrice = priceNew * item.quantity;
         item.priceNew = priceNew
         item.productInfo = productInfo;
-
       }
+    }
+    const shippingSetting = await ShippingSetting.findOne().lean();
+    let shippingFee = 0;
+    if (recordsOrder.totalOrder < shippingSetting.freeThreshold) {
+      shippingFee = shippingSetting.defaultFee;
     }
 
     res.json({
       code: 200,
       message: `Giỏ hàng`,
-      recordsOrder: recordsOrder
+      recordsOrder: recordsOrder,
+      shippingFee: shippingFee
     });
   } catch (error) {
     res.json({
@@ -196,7 +200,7 @@ module.exports.checkVoucher = async (req, res) => {
     // res.redirect(`/checkout/success/${order._id}`);
   } catch (error) {
     console.log(error.message);
-    
+
     res.json({
       code: 400,
       message: "Lỗi, vui lòng thử lại"
@@ -209,13 +213,16 @@ module.exports.success = async (req, res) => {
     // chỉ dành cho thanh toán bằng cod
     const orderId = req.params.orderId;
     const paymentMethod = req.body.paymentMethod;
-
+    const shippingFee = req.body.shippingFee;
+    console.log(req.body);
+    
     const recordOrder = await Order.findOne({ _id: orderId }).lean();
 
     if (recordOrder) {
       await Order.updateOne({ _id: orderId }, {
         paymentMethod: paymentMethod,
-        status: "processing"
+        status: "processing",
+        shippingFee: shippingFee
       });
 
       // gửi opt qua email user
@@ -226,10 +233,10 @@ module.exports.success = async (req, res) => {
           <p>Phương thức thanh toán <b>${paymentMethod}</b></p>
         `
       sendMailHelper.sendMail("ttanhoa4455@gmail.com", subject, html);
+
       res.json({
         code: 200,
         message: "Thanh toán thành công, chúng tôi sẽ liên hệ lại với bạn để xác nhận",
-        recordOrder: recordOrder
       });
 
     } else {

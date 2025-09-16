@@ -2,15 +2,17 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/articles.controller");
 const validate = require("../../validates/admin/accounts.validate")
+const checkPermission = require("../../middlewares/admin/checkPermission.middleware");
 
-router.get("/", controller.index);
 
-router.post("/create", validate.createPost, controller.createPost);
+router.get("/", checkPermission.checkPermission("articles_view"), controller.index);
 
-router.patch("/edit/:id", validate.editPatch, controller.editPatch);
+router.post("/create", checkPermission.checkPermission("articles_create"), validate.createPost, controller.createPost);
 
-router.delete("/delete/:id", controller.delete);
+router.patch("/edit/:id", checkPermission.checkPermission("articles_edit"), validate.editPatch, controller.editPatch);
 
-router.get("/detail/:id", controller.detail);
+router.delete("/delete/:id", checkPermission.checkPermission("articles_del"), controller.delete);
+
+router.get("/detail/:id", checkPermission.checkPermission("articles_view"), controller.detail);
 
 module.exports = router;

@@ -49,7 +49,7 @@ const productSchema = new mongoose.Schema({
       updatedAt: Date
     }
   ],
-  slug: { type: String, slug: "title", unique: true },
+  slug: { type: String, slug: "title", unique: true, index: true },
   deleted: {
     type: Boolean,
     default: false

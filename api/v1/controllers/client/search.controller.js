@@ -24,7 +24,7 @@ module.exports.index = async (req, res) => {
       code: 200,
       message: "Trả về kết quả tìm kiếm thành công",
       keyword: keyword,
-      records: records
+      data: records
     });
   } catch (error) {
     res.json({

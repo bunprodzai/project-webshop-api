@@ -3,10 +3,10 @@ module.exports.renderProductsTable = (products) => {
     <tr>
       <td>${p.title}</td>
       <td>${p.size}</td>
-      <td>${p.priceNew}</td>
+      <td>${Number(p.priceNew).toLocaleString()} đ</td>
       <td>${p.discountPercentage}%</td>
       <td>${p.quantity}</td>
-      <td>${p.totalPrice}</td>
+      <td>${Number(p.priceNew * p.quantity).toLocaleString()} đ</td>
     </tr>
   `).join("");
 

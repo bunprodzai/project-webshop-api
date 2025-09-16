@@ -2,15 +2,17 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/banners.controller");
 
-router.get("/", controller.index);
+const checkPermission = require("../../middlewares/admin/checkPermission.middleware");
 
-router.post("/create", controller.createPost);
+router.get("/", checkPermission.checkPermission("banners_view"), controller.index);
 
-router.patch("/edit/:id", controller.editPatch);
+router.post("/create", checkPermission.checkPermission("banners_create"), controller.createPost);
 
-router.get("/change-status/:status/:id", controller.changeStatus);
+router.patch("/edit/:id", checkPermission.checkPermission("banners_edit"), controller.editPatch);
 
-router.delete("/delete/:id", controller.delDelete);
+router.get("/change-status/:status/:id", checkPermission.checkPermission("banners_edit"), controller.changeStatus);
+
+router.delete("/delete/:id", checkPermission.checkPermission("banners_del"), controller.delDelete);
 
 
 module.exports = router;

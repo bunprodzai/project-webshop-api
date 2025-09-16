@@ -9,21 +9,19 @@ module.exports.index = async (req, res) => {
   res.json({
     code: 200,
     message: "Danh sách quảng cáo",
-    banners: banners
+    data: banners
   });
 }
 
 // [GET] /api/v1/banners/detail
 module.exports.detail = async (req, res) => {
   const slug = req.params.slug;
-  console.log(slug);
-  
   const banner = await Banner.findOne({ deleted: false, slug: slug });
   
   res.json({
     code: 200,
     message: "Chi tiết quảng cáo",
-    banner: banner
+    data: banner
   });
 }
 
@@ -36,6 +34,6 @@ module.exports.vouchers = async (req, res) => {
   res.json({
     code: 200,
     message: "Danh sách voucher theo quảng cáo",
-    vouchers: vouchers
+    data: vouchers
   });
 }

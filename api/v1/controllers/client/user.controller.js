@@ -111,7 +111,9 @@ module.exports.loginPost = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id },
+      { id: user._id,
+        fullName: user.fullName
+       },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -121,7 +123,8 @@ module.exports.loginPost = async (req, res) => {
       message: "Đăng nhập thành công",
       tokenUser: token,
       fullName: user.fullName,
-      avatar: user.avatar
+      avatar: user.avatar,
+      userId: user._id
     });
   } catch (err) {
     res.status(500).json({ code: 500, message: err.message });

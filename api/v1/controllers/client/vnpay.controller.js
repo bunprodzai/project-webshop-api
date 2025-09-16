@@ -58,11 +58,21 @@ module.exports.createQr = async (req, res) => {
 module.exports.checkPayment = async (req, res) => {
   const code = req.query.vnp_TxnRef;
   const isSuccess = req.query.vnp_ResponseCode === '00';
+  const vnp_Amount = req.query.vnp_Amount;
 
   if (isSuccess) {
     await VNPayTransactions.updateOne({ code_TxnRef: code }, { status: "paid" });
-    await Order.updateOne({ code: code }, { status: "received", paymentMethod: "bank" });
-    const order = await Order.findOne({ code: code });
+
+    const orderCurrent = await Order.findOne({ code: code }).select("totalOrder").lean();
+
+    await Order.updateOne({ code: code },
+      { status: "received", paymentMethod: "bank", shippingFee: Number(vnp_Amount) / 100 - orderCurrent.totalOrder });
+
+
+    const order = await Order.findOne({ code: code }).lean();
+
+    await Order.updateOne({ code: code },
+      { status: "received", paymentMethod: "bank", shippingFee: Number(vnp_Amount) / 100 - order.totalOrder });
 
     // gửi opt qua email user
     const subject = "Khách hàng đã xác nhận thanh toán đơn hàng";
@@ -75,14 +85,13 @@ module.exports.checkPayment = async (req, res) => {
 
     // gửi thông tin đơn hàng
     const products = [];
-    let totalPrice = 0; // tổng tiền của đơn hàng
     let totalQuantity = 0;
+
     if (order.products.length > 0) {
       // tổng số lượng sản phẩm của đơn hàng
       for (const product of order.products) {
         const priceNew = productHelper.priceNew(product);
 
-        totalPrice += priceNew * product.quantity;
         totalQuantity += product.quantity;
 
         const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title discountPercentage");
@@ -93,7 +102,6 @@ module.exports.checkPayment = async (req, res) => {
           discountPercentage: infoProduct.discountPercentage,
           size: product.size,
           title: infoProduct.title,
-          totalPrice: priceNew * product.quantity
         }
         products.push(objProducts);
       }
@@ -113,7 +121,7 @@ module.exports.checkPayment = async (req, res) => {
           ${productsTableHTML}
           <br/>
           <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
-          <p><b>Tổng tiền đơn hàng</b> ${totalPrice}</p>
+          <p><b>Tổng tiền đơn hàng</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
           <a href="http://localhost:3000/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
           <p>Trân trọng,<br/>Cửa hàng XYZ</p>
           `;

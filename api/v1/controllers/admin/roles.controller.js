@@ -1,45 +1,30 @@
 const Role = require("../../models/roles.model");
 
-
 // [GET] /api/v1/roles
 module.exports.index = async (req, res) => {
-  if (req.role.permissions.includes("roles_view")) {
-    let find = {
-      deleted: false
-    }
-    
-    const records = await Role.find(find);
-
-    res.json({
-      code: 200,
-      roles: records
-    });
-  } else {
-    res.json({
-      code: 403,
-      message: "Bạn không có quyền xem danh sách quyền!"
-    });
+  let find = {
+    deleted: false
   }
+  
+  const records = await Role.find(find);
+
+  res.json({
+    code: 200,
+    roles: records
+  });
 
   // /api/v1/roles
 }
 
 // [POST] /api/v1/roles/create
 module.exports.createPost = async (req, res) => {
-  if (req.role.permissions.includes("roles_create")) {
-    const record = new Role(req.body);
-    record.save();
-    res.json({
-      code: 200,
-      message: "Thêm mới thành công",
-      role: record
-    });
-  } else {
-    res.json({
-      code: 403,
-      message: "Bạn không có quyền tạo phân quyền!"
-    });
-  }
+  const record = new Role(req.body);
+  record.save();
+  res.json({
+    code: 200,
+    message: "Thêm mới thành công",
+    role: record
+  });
   // /api/v1/roles/create
   // {
   //   "title": "Quản trị bài viết",
@@ -56,22 +41,15 @@ module.exports.createPost = async (req, res) => {
 // [PATCH] /api/v1/roles/edit/:id
 module.exports.editPatch = async (req, res) => {
   try {
-    if (req.role.permissions.includes("roles_edit")) {
-      const id = req.params.id;
-      await Role.updateOne({
-        _id: id
-      }, req.body);
+    const id = req.params.id;
+    await Role.updateOne({
+      _id: id
+    }, req.body);
 
-      res.json({
-        code: 200,
-        message: "Chỉnh sửa thành công"
-      });
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền chỉnh sửa phân quyền!"
-      });
-    }
+    res.json({
+      code: 200,
+      message: "Chỉnh sửa thành công"
+    });
   } catch (error) {
     res.json({
       code: 400,
@@ -92,24 +70,17 @@ module.exports.editPatch = async (req, res) => {
 // [PATCH] /api/v1/roles/permissions
 module.exports.permissionsPatch = async (req, res) => {
   try {
-    if (req.role.permissions.includes("roles_permissions")) {
-      const permissions = req.body.permissions;
+    const permissions = req.body.permissions;
 
-      for (const item of permissions) {
-        await Role.updateOne({ _id: item.id }, { permissions: item.permissions });
-      };
-      const records = await Role.find({ deleted: false });
-      res.json({
-        code: 200,
-        message: "Cập nhập phân quyền thành công",
-        records: records
-      })
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền cập nhập phân quyền!"
-      });
-    }
+    for (const item of permissions) {
+      await Role.updateOne({ _id: item.id }, { permissions: item.permissions });
+    };
+    const records = await Role.find({ deleted: false });
+    res.json({
+      code: 200,
+      message: "Cập nhập phân quyền thành công",
+      records: records
+    })
   } catch (error) {
     res.json({
       code: 400,
@@ -184,26 +155,19 @@ module.exports.permissionsPatch = async (req, res) => {
 // [DELETE] /api/v1/roles/delete-item/:id
 module.exports.deleteItem = async (req, res) => {
   try {
-    if (req.role.permissions.includes("roles_del")) {
-      const id = req.params.id;
+    const id = req.params.id;
 
-      await Role.updateOne({
-        _id: id
-      }, {
-        deleted: true,
-        deteledAt: new Date()
-      });
+    await Role.updateOne({
+      _id: id
+    }, {
+      deleted: true,
+      deteledAt: new Date()
+    });
 
-      res.json({
-        code: 200,
-        message: "Xóa nhóm quyền thành công"
-      });
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền xóa nhóm quyền!"
-      });
-    }
+    res.json({
+      code: 200,
+      message: "Xóa nhóm quyền thành công"
+    });
   } catch (error) {
     res.json({
       code: 400,
@@ -215,22 +179,15 @@ module.exports.deleteItem = async (req, res) => {
 // [GET] /api/v1/roles/detail/:id
 module.exports.detail = async (req, res) => {
   try {
-    if (req.role.permissions.includes("roles_view")){
-      const id = req.params.id;
+    const id = req.params.id;
 
-      const role = await Role.findOne({_id: id});
+    const role = await Role.findOne({_id: id});
 
-      res.json({
-        code: 200,
-        message: "Chi tiết quyền",
-        role: role
-      });
-    } else {
-      res.json({
-        code: 403,
-        message: "Bạn không có quyền này"
-      });
-    }
+    res.json({
+      code: 200,
+      message: "Chi tiết quyền",
+      role: role
+    });
   } catch (error) {
     res.json({
       code: 400,

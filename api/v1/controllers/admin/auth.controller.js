@@ -49,9 +49,7 @@ module.exports.loginPost = async (req, res) => {
       code: 200,
       message: "Đăng nhập thành công",
       token: token,
-      id: user.id,
       fullName: user.fullName,
-      email: user.email,
       permissions: permissions.permissions
     });
   } catch (error) {

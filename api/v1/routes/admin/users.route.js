@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/users.controller");
 
-router.get("/", controller.index);
+const checkPermission = require("../../middlewares/admin/checkPermission.middleware");
 
-router.get("/change-status/:status/:id", controller.changeStatus);
+router.get("/", checkPermission.checkPermission("users_view"), controller.index);
 
-router.delete("/delete/:idUser", controller.delete);
+router.get("/change-status/:status/:id", checkPermission.checkPermission("users_edit"), controller.changeStatus);
 
-router.get("/detail/:idUser", controller.detail);
+router.delete("/delete/:idUser", checkPermission.checkPermission("users_del"), controller.delete);
+
+router.get("/detail/:idUser", checkPermission.checkPermission("users_view"), controller.detail);
 
 module.exports = router;

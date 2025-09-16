@@ -2,15 +2,17 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/vouchers.controller");
 
-router.get("/", controller.index);
+const checkPermission = require("../../middlewares/admin/checkPermission.middleware");
 
-router.post("/create", controller.createPost);
+router.get("/", checkPermission.checkPermission("vouchers_view"), controller.index);
 
-router.patch("/edit/:id", controller.editPatch);
+router.post("/create", checkPermission.checkPermission("vouchers_create"), controller.createPost);
 
-router.get("/change-status/:status/:id", controller.changeStatus);
+router.patch("/edit/:id", checkPermission.checkPermission("vouchers_edit"), controller.editPatch);
 
-router.delete("/delete/:id", controller.delDelete);
+router.get("/change-status/:status/:id", checkPermission.checkPermission("vouchers_edit"), controller.changeStatus);
+
+router.delete("/delete/:id", checkPermission.checkPermission("vouchers_del"), controller.delDelete);
 
 
 module.exports = router;

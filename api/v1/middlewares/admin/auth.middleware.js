@@ -66,7 +66,7 @@ module.exports.requireAuth = async (req, res, next) => {
   const token = authHeader.split(" ")[1]; // Lấy token sau "Bearer "
   if (!token) {
     res.json({
-      code: 400,
+      code: 204,
       message: "Không tìm thấy token!",
     });
     return;
@@ -77,11 +77,18 @@ module.exports.requireAuth = async (req, res, next) => {
 
     const user = await Account.findOne({ _id: decoded.id }).select(" -password");
 
+    if(!user){
+      res.json({
+        code: 204,
+        message: "Không tìm thấy user!"
+      });
+      return;
+    }
+
     const role = await Role.findOne({ _id: user.role_id }).select("permissions title");
 
     req.role = role;
     req.userAuth = user;
-
     next();
   } catch (error) {
     res.json({

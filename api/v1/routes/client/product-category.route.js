@@ -4,7 +4,4 @@ const controller = require("../../controllers/client/products-category.controlle
 
 router.get("/", controller.index);
 
-
-
-
 module.exports = router;

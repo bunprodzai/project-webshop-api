@@ -8,7 +8,7 @@ module.exports.latestRevenue = async (time) => {
     const startDate = new Date(year, month - 1, 1);
 
     const orders = await Order.find({
-      createdAt: { $gte: startDate, $lt: endDate }
+      createdAt: { $gte: startDate, $lt: endDate }, status: "success"
     }).lean();
 
     // Khởi tạo kết quả mặc định
