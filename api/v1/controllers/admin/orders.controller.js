@@ -84,10 +84,18 @@ module.exports.detail = async (req, res) => {
       }
     }
     record.totalPriceProducts = record.products.reduce((sum, item) => item.totalPrice + sum, 0);
+
+    const shippingSetting = await ShippingSetting.findOne().lean();
+    let shippingFee = 0;
+    if (recordsOrder.totalOrder < shippingSetting.freeThreshold) {
+      shippingFee = shippingSetting.defaultFee;
+    }
+
     res.json({
       code: 200,
       message: "Chi tiết đơn hàng",
-      record: record
+      record: record,
+      shippingFee: shippingFee
     });
   } catch (error) {
     console.log(error);
@@ -106,7 +114,7 @@ module.exports.changeStatus = async (req, res) => {
     const status = req.params.status;
     const order = await Order.findOne({ code: code });
     console.log(order);
-    
+
     if (!order) {
       res.json({
         code: 400,
@@ -227,7 +235,7 @@ module.exports.updateShippingSettings = async (req, res) => {
       const setting = new ShippingSetting(req.body);
       await setting.save();
     }
-    
+
     res.json({
       code: 200,
       message: "Cập nhật thành công"

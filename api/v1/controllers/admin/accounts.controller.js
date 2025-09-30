@@ -8,11 +8,13 @@ module.exports.index = async (req, res) => {
     const find = {
       deleted: false
     }
-    const records = await Account.find(find).select("-password -token");
+    const records = await Account.find(find).select("-password");
 
     for (const record of records) {
       const role = await Role.findOne({ _id: record.role_id, deleted: false });
-      record.role = role
+      if (role) {
+        record.role = role
+      }
     }
     res.json({
       code: 200,
@@ -21,7 +23,7 @@ module.exports.index = async (req, res) => {
   } catch (error) {
     res.json({
       code: 400,
-      message: "Lỗi!"
+      message: "Lỗi!" + error.message
     });
   }
   // /api/v1/accounts

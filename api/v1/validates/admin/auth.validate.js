@@ -1,21 +1,33 @@
+const { body, validationResult } = require("express-validator");
 
-module.exports.loginPost = async (req, res, next) => {
+// Rule validate cho login
+const loginValidationRules = [
+  body("email")
+    .notEmpty().withMessage("Email không được để trống!")
+    .isEmail().withMessage("Email không hợp lệ!"),
+  body("password")
+    .notEmpty().withMessage("Password không được để trống!")
+];
 
-  if (req.body.email == '') {
-    res.json({
+// Middleware xử lý validate
+const loginValid = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
       code: 400,
-      message: "Vui lòng nhập email",
+      message: errors.array().map(err => ({
+        field: err.param,
+        message: err.msg
+      }))
     });
-    return;
   }
 
-  if (req.body.password == '') {
-    res.json({
-      code: 400,
-      message: "Vui lòng nhập password",
-    });
-    return;
-  }
-
+  // Nếu hợp lệ thì cho đi tiếp
   next();
-}
+};
+
+module.exports = {
+  loginValidationRules,
+  loginValid
+};

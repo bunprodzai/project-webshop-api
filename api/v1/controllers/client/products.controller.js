@@ -1,6 +1,7 @@
 const Product = require("../../models/product.model");
 const ProductCategory = require("../../models/product.category.model");
 const Review = require("../../models/review.model");
+const FavoriteProduct = require("../../models/favorite-products.model");
 const User = require("../../models/users.model");
 const mongoose = require("mongoose");
 const productsHelper = require("../../../../helpers/products");
@@ -14,8 +15,6 @@ module.exports.index = async (req, res) => {
     deleted: false,
     status: "active"
   }).lean().select("-updatedBy -createdAt -updatedAt -createBy");
-
-  // const newProducts = productsHelper.priceNewProducts(products);
 
   res.json({
     code: 200,
@@ -88,7 +87,7 @@ module.exports.category = async (req, res) => {
       category: category
     });
   } catch (error) {
-
+    console.log("Loi o day");
     res.json({
       code: 400,
       message: "Lỗi!" + error.message
@@ -297,5 +296,88 @@ module.exports.deleteReply = async (req, res) => {
       code: 400,
       message: "Đã có lỗi xảy ra khi xóa đánh giá. Vui lòng thử lại sau!"
     })
+  }
+}
+
+// [GET] /products
+module.exports.favoriteProducts = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const user = await User.findById(userId).select("favorites");
+    // Lấy mảng product_id
+    const favoriteIds = user.favorites.map(fav => fav.product_id);
+
+    // Query sản phẩm theo danh sách id
+    const products = await Product.find({
+      deleted: false,
+      _id: { $in: favoriteIds }
+    });
+
+    res.json({
+      code: 200,
+      message: "Danh sách sản phẩm yêu thích",
+      data: products
+    });
+
+  } catch (error) {
+    console.log(error.message);
+    res.json({
+      code: 400,
+      message: error.message
+    });
+  }
+}
+
+// [PATCh] /products/
+module.exports.favorite = async (req, res) => {
+  try {
+    const userId = req.user.id; // user đã login
+    const productId = req.params.productId;
+    const typeFavorite = req.params.typeFavorite;
+
+    switch (typeFavorite) {
+      case "favorite": {
+        // kiểm tra đã tồn tại chưa
+        const user = await User.findOne({ _id: userId });
+
+        const existFavorite = user.favorites.
+          find(item => item.product_id === productId);
+
+        if (!existFavorite) {
+          await User.updateOne(
+            { _id: userId },
+            { $addToSet: { favorites: { product_id: productId } } } // $addToSet tránh trùng
+          );
+          return res.json({
+            code: 200,
+            message: "Yêu thích thành công"
+          });
+        }
+      }
+
+      case "unfavorite": {
+        await User.updateOne(
+          { _id: userId },
+          { $pull: { favorites: { product_id: productId } } } // $pull xóa khỏi array
+        );
+        return res.json({
+          code: 201,
+          message: "Hủy yêu thích thành công"
+        });
+      }
+
+      default:
+        return res.json({
+          code: 400,
+          message: "Loại thao tác không hợp lệ"
+        });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      code: 500,
+      message: "Lỗi server"
+    });
   }
 }

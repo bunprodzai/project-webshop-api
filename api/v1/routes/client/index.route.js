@@ -1,4 +1,3 @@
-
 const cartRoute = require("./cart.route");
 const productRoute = require("./product.route");
 const searchRoute = require("./search.route");
@@ -12,7 +11,6 @@ const chatAi = require("./chatai.route");
 const vnPay = require("./vn-pay.route");
 const bunz = require("./bunz.route");
 const banner = require("./banner.route");
-
 
 const connectDb = require("../../middlewares/connectMongo.middware");
 
@@ -34,4 +32,5 @@ module.exports = (app) => {
   app.use(`/api/v1/articles`, articleRoute);
   app.use(`/api/v1/products-category`, productCategoryRoute);
   app.use(`/api/v1/chatbot`, chatAi);
+  
 }

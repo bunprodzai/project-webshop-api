@@ -1,7 +1,7 @@
 const { body, validationResult } = require("express-validator");
 
 // Rule validate cho login
-const accountCreateValidationRules = [
+const myAccountEditValidationRules = [
   body("fullName")
     .notEmpty().withMessage("Tên không được để trống"),
   body("email")
@@ -10,25 +10,20 @@ const accountCreateValidationRules = [
   body("password")
     .notEmpty().withMessage("Password không được để trống.")
     .isLength({ min: 10 }).withMessage("Password phải ít nhất 10 ký tự."),
-  body("role_id")
-    .notEmpty().withMessage("Chọn quyền!")
 ];
-
 // Rule validate cho login
-const accountEditValidationRules = [
-  body("fullName")
-    .notEmpty().withMessage("Tên không được để trống"),
-  body("email")
-    .notEmpty().withMessage("Tên không được để trống")
-    .isEmail().withMessage("Email không hợp lệ."),
-  body("password").optional()
-    .notEmpty().withMessage("Password không được để trống.")
-    .isLength({ min: 10 }).withMessage("Password phải ít nhất 10 ký tự."),
-  body("role_id")
-    .notEmpty().withMessage("Chọn quyền!")
+const changePasswordValidationRules = [
+  body("passwordOld")
+    .notEmpty().withMessage("Mật khẩu cũ không được để trống"),
+  body("passwordNew")
+    .notEmpty().withMessage("Mật khẩu mới không được để trống")
+    .isLength({ min: 10 }).withMessage("Mật khẩu phải ít nhất 10 ký tự."),
+  body("passwordNewComfirm").optional()
+    .notEmpty().withMessage("Mật khẩu xác nhận không được để trống.")
+    .isLength({ min: 10 }).withMessage("Mật khẩu phải ít nhất 10 ký tự."),
 ];
 
-const createPost = async (req, res, next) => {
+const editValid = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -44,7 +39,7 @@ const createPost = async (req, res, next) => {
   next();
 }
 
-const editPatch = async (req, res, next) => {
+const changePasswordValid = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -61,8 +56,8 @@ const editPatch = async (req, res, next) => {
 }
 
 module.exports = {
-  accountCreateValidationRules,
-  accountEditValidationRules,
-  createPost,
-  editPatch
+  myAccountEditValidationRules,
+  changePasswordValidationRules,
+  editValid,
+  changePasswordValid
 };

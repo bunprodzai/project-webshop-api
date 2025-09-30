@@ -1,24 +1,34 @@
+const { body, validationResult } = require("express-validator");
 
-module.exports.registerPost = async (req, res, next) => {
+// Rule validate cho login
+const registerValidationRules = [
+  body("email")
+    .notEmpty().withMessage("Email không được để trống.")
+    .isEmail().withMessage("Email không hợp lệ."),
+  body("fullName")
+    .notEmpty().withMessage("Tên không được để trống."),
+  body("password")
+    .notEmpty().withMessage("Password không được để trống.")
+    .isLength({ min: 12 }).withMessage("Password phải ít nhất 12 ký tự."),
+];
 
-  if (req.body.email == '') {
-    req.flash("error", "Vui lòng email");
-    res.redirect(`back`);
-    return;
-  }
+const registerValid = async (req, res, next) => {
+  const errors = validationResult(req);
 
-  if (req.body.password == '') {
-    req.flash("error", "Vui lòng nhập mật khẩu");
-    res.redirect(`back`);
-    return;
-  }
-
-  if (req.body.fullName == '') {
-    req.flash("error", "Vui lòng nhập tên");
-    res.redirect(`back`);
-    return;
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      code: 400,
+      message: errors.array().map(err => ({
+        field: err.param,
+        message: err.msg
+      }))
+    });
   }
 
   next();
 }
 
+module.exports = {
+  registerValidationRules,
+  registerValid
+}

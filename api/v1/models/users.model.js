@@ -5,10 +5,6 @@ const userSchema = new mongoose.Schema({
   fullName: String,
   email: String,
   password: String,
-  tokenUser: {
-    type: String,
-    default: generateToken.generateToken()
-  },
   phone: {
     type: String,
     default: ""
@@ -18,6 +14,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  favorites: [
+    {
+      product_id: String
+    }
+  ],
   status: {
     type: String,
     default: "active"

@@ -40,47 +40,6 @@ module.exports.registerPost = async (req, res) => {
   });
 }
 
-
-// [POST] /user/login
-// module.exports.loginPost = async (req, res) => {
-
-//   const user = await User.findOne({ email: req.body.email, deleted: false });
-
-//   if (!user) {
-//     res.json({
-//       code: 400,
-//       message: "Email không tồn tại!"
-//     });
-//     return;
-//   }
-
-//   if (md5(req.body.password) != user.password) {
-//     res.json({
-//       code: 400,
-//       message: "Sai mật khẩu!"
-//     });
-//     return;
-//   }
-
-//   if (user.status != "active") {
-//     res.json({
-//       code: 400,
-//       message: "Tài khoản đã bị khóa!"
-//     });
-//     return;
-//   }
-
-//   res.json({
-//     code: 200,
-//     message: "Đăng nhập thành công",
-//     tokenUser: user.tokenUser,
-//     fullName: user.fullName,
-//     avatar: user.avatar
-//   });
-// }
-
-// [POST] /user/login
-
 module.exports.loginPost = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -117,14 +76,15 @@ module.exports.loginPost = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-
+    
     res.json({
       code: 200,
       message: "Đăng nhập thành công",
       tokenUser: token,
       fullName: user.fullName,
       avatar: user.avatar,
-      userId: user._id
+      userId: user._id,
+      favorites: user.favorites
     });
   } catch (err) {
     res.status(500).json({ code: 500, message: err.message });

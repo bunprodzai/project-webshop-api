@@ -152,9 +152,6 @@ module.exports.addPatch = async (req, res) => {
 
     const existsProductCart = cart.products.find(item => item.product_id === productId && item.size === size);
 
-    // const quantitySotck = getQuantityBySize(stockProduct.sizeStock, size);
-
-
     if (existsProductCart) {
       // Nếu sản phẩm đã tồn tại trong giỏ hàng, cập nhật số lượng
       let quantityNew = quantity + existsProductCart.quantity;

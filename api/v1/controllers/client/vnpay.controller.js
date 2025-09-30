@@ -37,7 +37,7 @@ module.exports.createQr = async (req, res) => {
     vnp_TxnRef: code, // mã đơn hàng
     vnp_OrderInfo: orderInfo, // thông tin đơn hàng.
     vnp_OrderType: ProductCode.Other,
-    vnp_ReturnUrl: `http://localhost:${process.env.PORT}/api/v1/vn-pay/check-payment-vnpay`, //
+    vnp_ReturnUrl: `https://project-webshop-api.vercel.app/api/v1/vn-pay/check-payment-vnpay`, //
     vnp_Locale: VnpLocale.VN, // 'vn' or 'en'
     vnp_CreateDate: dateFormat(new Date()),
     vnp_ExpireDate: dateFormat(tomorrow), // 1 ngày sau hết hạn
@@ -128,9 +128,9 @@ module.exports.checkPayment = async (req, res) => {
     sendMailHelper.sendMail(order.userInfo.email, subject2, html2);
 
     // Redirect về trang frontend
-    return res.redirect(`http://localhost:3000/order/checkout/pay/success/${code}`);
+    return res.redirect(`https://project-webshop-reactjs.vercel.app/order/checkout/pay/success/${code}`);
   } else {
-    return res.redirect(`http://localhost:3000/order/checkout/pay/fail/${code}`);
+    return res.redirect(`https://project-webshop-reactjs.vercel.app/order/checkout/pay/fail/${code}`);
   }
 
   //   {

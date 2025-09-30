@@ -8,7 +8,7 @@ const searchHelper = require("../../../../helpers/search");
 module.exports.index = async (req, res) => {
   const status = req.query.status;
   const limitItem = req.query.limit;
-  const find = {
+  let find = {
     deleted: false
   };
 
@@ -31,10 +31,10 @@ module.exports.index = async (req, res) => {
   // end phân trang
 
   // Tìm kiếm
-  const objSearch = searchHelper(req.query);
+  const searchData = searchHelper(req.query);
 
-  if (objSearch.regex) {
-    find.title = objSearch.regex;
+  if (searchData.keyword) {
+    find = { ...find, ...searchData.condition };
   }
   // /api/v1/products?keyword=samsung url để search
   // end Tìm kiếm
@@ -48,7 +48,7 @@ module.exports.index = async (req, res) => {
   }
   // }/api/v1/products?sortKey=price&sortType=asc url để query
   // end sort
-
+  
   const products = await Product.find(find)
     .sort(sort)
     .limit(objetPagination.limitItems)

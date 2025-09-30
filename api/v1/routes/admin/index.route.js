@@ -13,6 +13,7 @@ const orderRoute = require("./orders.route");
 const articleRoute = require("./articles.route");
 const bannerRoute = require("./banners.route");
 const voucherRoute = require("./vouchers.route");
+const trashRoute = require("./trashs.route");
 
 const authMiddleware = require("../../middlewares/admin/auth.middleware");
 const connectDb = require("../../middlewares/connectMongo.middware");
@@ -47,5 +48,7 @@ module.exports = (app) => {
   app.use(`/api/v1/${prefixAdmin}/banners`, authMiddleware.requireAuth, bannerRoute);
 
   app.use(`/api/v1/${prefixAdmin}/vouchers`, authMiddleware.requireAuth, voucherRoute);
+
+  app.use(`/api/v1/${prefixAdmin}/trashs`, authMiddleware.requireAuth, trashRoute);
 
 } 
