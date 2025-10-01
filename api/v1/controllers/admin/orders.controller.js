@@ -43,10 +43,14 @@ module.exports.index = async (req, res) => {
       let totalPrice = 0;
       let totalQuantity = 0;
       for (const product of item.products) {
+        const productInfo = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" })
+          .select("title");
+        product.title = productInfo.title;
         const priceNew = productHelper.priceNew(product);
         totalPrice += priceNew * product.quantity;
         totalQuantity += product.quantity;
       }
+
       item.totalOrder = totalPrice;
       sales += item.totalOrder;
       item.totalQuantity = totalQuantity;
@@ -94,7 +98,7 @@ module.exports.detail = async (req, res) => {
     res.json({
       code: 200,
       message: "Chi tiết đơn hàng",
-      record: record,
+      data: data,
       shippingFee: shippingFee
     });
   } catch (error) {
@@ -108,101 +112,360 @@ module.exports.detail = async (req, res) => {
 }
 
 // [GET] /admin/orders/change-status/:status/:code
+// module.exports.changeStatus = async (req, res) => {
+//   try {
+//     const code = req.params.code;
+//     const status = req.params.status;
+//     const order = await Order.findOne({ code: code });
+//     if (!order) {
+//       res.json({
+//         code: 400,
+//         message: "Đơn hàng không tồn tại"
+//       });
+//       return;
+//     }
+
+//     if (status === "received") {
+//       const products = [];
+//       let totalQuantity = 0;
+//       if (order.products.length > 0) {
+//         // tổng số lượng sản phẩm của đơn hàng
+//         for (const product of order.products) {
+//           const priceNew = productHelper.priceNew(product);
+//           totalQuantity += product.quantity;
+
+//           const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title discountPercentage");
+
+//           const objProducts = {
+//             priceNew: priceNew,
+//             quantity: product.quantity,
+//             discountPercentage: infoProduct.discountPercentage,
+//             size: product.size,
+//             title: infoProduct.title
+//           }
+//           products.push(objProducts);
+//         }
+//       }
+
+//       // gửi opt qua email user
+//       const subject = "Đơn hàng của bạn đã được xác nhận, đơn hàng sẽ được giao đến bạn sớm nhất";
+//       const productsTableHTML = renderProductsTable(products); // `products` là mảng bạn đã có
+
+//       const html = `
+//         <p>Cảm ơn bạn đã đặt hàng tại cửa hàng chúng tôi!</p>
+//         <p><b>Mã đơn hàng:</b> ${order.code}</p>
+//         <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+//         <p><b>Phương thức thanh toán:</b> ${order.paymentMethod}</p>
+//         <br/>
+//         <p><b>Chi tiết đơn hàng:</b></p>
+//         ${productsTableHTML}
+//         <br/>
+//         <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
+//         <p><b>Tổng tiền đơn hàng</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
+//         <a href="http://localhost:3000/order/checkout/pay/success/${order.code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
+//         <p>Trân trọng,<br/>Cửa hàng XYZ</p>
+//         `;
+//       sendMailHelper.sendMail(order.userInfo.email, subject, html);
+
+//       await Order.updateOne({ code: code }, { status: status });
+
+//       res.json({
+//         code: 200,
+//         message: "Đơn hàng đã được xác nhận"
+//       });
+
+//       return;
+
+//     } else if (status === "success") {
+
+//       if (order.products.length > 0) {
+//         for (const product of order.products) {
+//           const productId = product.product_id;
+//           const productOld = await Product.findOne({ _id: productId });
+//           const quantityStock = getQuantityBySize(productOld.sizeStock, product.size);
+//           const updatedSizeStock = updateSizeStock(productOld.sizeStock, product.size, quantityStock - product.quantity);
+//           await Product.updateOne({ _id: productId }, { sizeStock: updatedSizeStock, stock: productOld.stock - product.quantity });
+//         }
+//       }
+
+//       await Order.updateOne({ code: code }, { status: "success" })
+
+//       res.json({
+//         code: 200,
+//         message: "Đơn hàng đã được hoàn thành"
+//       });
+//       return;
+//     } else if (status === "cancelled") {
+//       await Order.updateOne({ code: code }, { status: "cancelled" })
+
+//       res.json({
+//         code: 200,
+//         message: "Hủy đơn thành công"
+//       });
+//       return;
+//     }
+//   } catch (error) {
+//     console.log(error);
+
+//     res.json({
+//       code: 400,
+//       message: "Lỗi params"
+//     });
+//   }
+// }
+// [GET] /admin/orders/change-status/:status/:code
 module.exports.changeStatus = async (req, res) => {
   try {
     const code = req.params.code;
     const status = req.params.status;
-    const order = await Order.findOne({ code: code });
-    console.log(order);
+    const order = await Order.findOne({ code });
 
     if (!order) {
-      res.json({
-        code: 400,
-        message: "Đơn hàng không tồn tại"
-      });
-      return;
+      return res.json({ code: 400, message: "Đơn hàng không tồn tại!" });
     }
 
-    if (status === "received") {
-      const products = [];
-      let totalQuantity = 0;
-      if (order.products.length > 0) {
-        // tổng số lượng sản phẩm của đơn hàng
-        for (const product of order.products) {
-          const priceNew = productHelper.priceNew(product);
-          totalQuantity += product.quantity;
+    // validate trạng thái chuyển đổi
+    const allowedTransitions = {
+      initialize: ["confirmed", "received", "cancelled"],
+      confirmed: ["processing", "cancelled"],
+      received: ["confirmed", "processing", "cancelled"],
+      processing: ["shipping", "cancelled"],
+      shipping: ["completed", "returned"],
+      completed: [],
+      cancelled: [],
+      returned: []
+    };
 
-          const infoProduct = await Product.findOne({ _id: product.product_id, deleted: false, status: "active" }).select("title discountPercentage");
+    if (!allowedTransitions[order.status].includes(status)) {
+      return res.json({
+        code: 400,
+        message: `Không thể chuyển từ trạng thái '${order.status}' sang '${status}'`
+      });
+    }
 
-          const objProducts = {
-            priceNew: priceNew,
-            quantity: product.quantity,
-            discountPercentage: infoProduct.discountPercentage,
-            size: product.size,
-            title: infoProduct.title
+    switch (status) {
+      case "confirmed":
+        {
+          await Order.updateOne({ code }, { status });
+
+          const products = [];
+          let totalQuantity = 0;
+          if (order.products.length > 0) {
+            for (const product of order.products) {
+              const priceNew = productHelper.priceNew(product);
+              totalQuantity += product.quantity;
+
+              const infoProduct = await Product.findOne({
+                _id: product.product_id,
+                deleted: false,
+                status: "active"
+              }).select("title discountPercentage");
+
+              products.push({
+                priceNew,
+                quantity: product.quantity,
+                discountPercentage: infoProduct.discountPercentage,
+                size: product.size,
+                title: infoProduct.title
+              });
+            }
           }
-          products.push(objProducts);
+
+          const subject = `Xác nhận đơn hàng. Chúng tôi đã xác nhận đơn hàng #${order.code}`;
+          const productsTableHTML = renderProductsTable(products);
+          const html = `
+            <p>Cảm ơn bạn đã đặt hàng!</p>
+            <p>Chúng tôi sẽ giao hàng đến bạn sớm nhất</p>
+            <p><b>Mã đơn hàng:</b> ${order.code}</p>
+            <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+            <p><b>Phương thức thanh toán:</b> ${order.paymentMethod}</p>
+            <p><b>Chi tiết đơn hàng:</b></p>
+            ${productsTableHTML}
+            <p><b>Tổng số lượng:</b> ${totalQuantity}</p>
+            <p><b>Tổng tiền:</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
+            <a href="${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
+            Xem chi tiết đơn hàng</a>
+          `;
+          sendMailHelper.sendMail(order.userInfo.email, subject, html);
+
+          return res.json({ code: 200, message: "Đơn hàng đã được xác nhận" });
         }
-      }
+      case "received":
+        {
+          const products = [];
+          let totalQuantity = 0;
+          if (order.products.length > 0) {
+            for (const product of order.products) {
+              const priceNew = productHelper.priceNew(product);
+              totalQuantity += product.quantity;
 
-      // gửi opt qua email user
-      const subject = "Đơn hàng của bạn đã được xác nhận, đơn hàng sẽ được giao đến bạn sớm nhất";
-      const productsTableHTML = renderProductsTable(products); // `products` là mảng bạn đã có
+              const infoProduct = await Product.findOne({
+                _id: product.product_id,
+                deleted: false,
+                status: "active"
+              }).select("title discountPercentage");
 
-      const html = `
-        <p>Cảm ơn bạn đã đặt hàng tại cửa hàng chúng tôi!</p>
-        <p><b>Mã đơn hàng:</b> ${order.code}</p>
-        <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
-        <p><b>Phương thức thanh toán:</b> ${order.paymentMethod}</p>
-        <br/>
-        <p><b>Chi tiết đơn hàng:</b></p>
-        ${productsTableHTML}
-        <br/>
-        <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
-        <p><b>Tổng tiền đơn hàng</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
-        <a href="http://localhost:3000/order/checkout/pay/success/${order.code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
-        <p>Trân trọng,<br/>Cửa hàng XYZ</p>
-        `;
-      sendMailHelper.sendMail(order.userInfo.email, subject, html);
+              products.push({
+                priceNew,
+                quantity: product.quantity,
+                discountPercentage: infoProduct.discountPercentage,
+                size: product.size,
+                title: infoProduct.title
+              });
+            }
+          }
 
-      await Order.updateOne({ code: code }, { status: status });
-
-      res.json({
-        code: 200,
-        message: "Đơn hàng đã được xác nhận"
-      });
-
-      return;
-
-    } else if (status === "success") {
-
-      if (order.products.length > 0) {
-        for (const product of order.products) {
-          const productId = product.product_id;
-          const productOld = await Product.findOne({ _id: productId });
-          const quantityStock = getQuantityBySize(productOld.sizeStock, product.size);
-          const updatedSizeStock = updateSizeStock(productOld.sizeStock, product.size, quantityStock - product.quantity);
-          await Product.updateOne({ _id: productId }, { sizeStock: updatedSizeStock, stock: productOld.stock - product.quantity });
+          const subject = `Thanh toán đơn hàng #${order.code} thành công`;
+          const productsTableHTML = renderProductsTable(products);
+          const html = `
+            <p>Cảm ơn bạn đã đặt hàng!</p>
+            <p><b>Mã đơn hàng:</b> ${order.code}</p>
+            <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+            <p><b>Phương thức thanh toán:</b> ${order.paymentMethod}</p>
+            <p><b>Chi tiết đơn hàng:</b></p>
+            ${productsTableHTML}
+            <p><b>Tổng số lượng:</b> ${totalQuantity}</p>
+            <p><b>Tổng tiền:</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
+            <a href="${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
+            Xem chi tiết đơn hàng</a>
+          `;
+          sendMailHelper.sendMail(order.userInfo.email, subject, html);
+          await Order.updateOne({ code }, { status });
+          return res.json({ code: 200, message: "Đã nhận thanh toán" });
         }
-      }
 
-      await Order.updateOne({ code: code }, { status: "success" })
+      case "processing":
+        await Order.updateOne({ code }, { status });
+        return res.json({ code: 200, message: "Đơn hàng đang xử lý" });
 
-      res.json({
-        code: 200,
-        message: "Đơn hàng đã được hoàn thành"
-      });
-      return;
+      case "shipping":
+        {
+          await Order.updateOne({ code }, { status });
+
+          const subject = `Đơn hàng ${order.code} đã được bàn giao cho đơn vị vận chuyển`;
+          const html = `
+            <p>Cảm ơn bạn đã đặt hàng!</p>
+            <p><b>Mã đơn hàng:</b> ${order.code}</p>
+            <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+            <a href="${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
+            Xem chi tiết đơn hàng</a>
+          `;
+          sendMailHelper.sendMail(order.userInfo.email, subject, html);
+          return res.json({ code: 200, message: "Đơn hàng đã bàn giao cho đơn vị vận chuyển" });
+        }
+      case "completed":
+        {
+          if (order.products.length > 0) {
+            for (const product of order.products) {
+              const productId = product.product_id;
+              const productOld = await Product.findOne({ _id: productId });
+              const quantityStock = getQuantityBySize(productOld.sizeStock, product.size);
+              const updatedSizeStock = updateSizeStock(
+                productOld.sizeStock,
+                product.size,
+                quantityStock - product.quantity
+              );
+              await Product.updateOne(
+                { _id: productId },
+                { sizeStock: updatedSizeStock, stock: productOld.stock - product.quantity }
+              );
+            }
+          }
+          await Order.updateOne({ code }, { status });
+          const products = [];
+          let totalQuantity = 0;
+          if (order.products.length > 0) {
+            for (const product of order.products) {
+              const priceNew = productHelper.priceNew(product);
+              totalQuantity += product.quantity;
+
+              const infoProduct = await Product.findOne({
+                _id: product.product_id,
+                deleted: false,
+                status: "active"
+              }).select("title discountPercentage");
+
+              products.push({
+                priceNew,
+                quantity: product.quantity,
+                discountPercentage: infoProduct.discountPercentage,
+                size: product.size,
+                title: infoProduct.title
+              });
+            }
+          }
+          const subject = `Đơn hàng #${order.code} đã giao hàng thành công`;
+          const productsTableHTML = renderProductsTable(products);
+          const html = `
+            <p>Cảm ơn bạn đã đặt hàng!</p>
+            <p><b>Mã đơn hàng:</b> ${order.code}</p>
+            <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+            <p><b>Chi tiết đơn hàng:</b></p>
+            ${productsTableHTML}
+            <p>Chúc bạn luôn có những trải nghiệm tuyệt vời khi mua sắm tại cửa hàng của chúng tôi</p>.
+            <a href="${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">
+            Xem chi tiết đơn hàng</a>
+          `;
+          sendMailHelper.sendMail(order.userInfo.email, subject, html);
+
+          return res.json({ code: 200, message: "Đơn hàng đã hoàn thành" });
+        }
+
+      case "cancelled":
+        {
+          await Order.updateOne({ code }, { status });
+
+          const products = [];
+          let totalQuantity = 0;
+          if (order.products.length > 0) {
+            for (const product of order.products) {
+              const priceNew = productHelper.priceNew(product);
+              totalQuantity += product.quantity;
+
+              const infoProduct = await Product.findOne({
+                _id: product.product_id,
+                deleted: false,
+                status: "active"
+              }).select("title discountPercentage");
+
+              products.push({
+                priceNew,
+                quantity: product.quantity,
+                discountPercentage: infoProduct.discountPercentage,
+                size: product.size,
+                title: infoProduct.title
+              });
+            }
+          }
+          const subject = `Thông báo hủy đơn hàng #${order.code}`;
+          const html = `
+            <p>Xin chào <b>${order.userInfo.fullName}</b>,</p>
+            <p>Rất tiếc đơn hàng của bạn đã được <b>hủy</b>.</p>
+            
+            <p><b>Mã đơn hàng:</b> ${order.code}</p>
+            <p><b>Tên khách hàng:</b> ${order.userInfo.fullName}</p>
+            <p><b>Email:</b> ${order.userInfo.email}</p>
+
+            <p>Chúng tôi hy vọng sẽ được phục vụ bạn trong những lần mua sắm tiếp theo.</p>
+            <p>Trân trọng,<br/>Đội ngũ cửa hàng ShopOnline</p>
+          `;
+          sendMailHelper.sendMail(order.userInfo.email, subject, html);
+
+          return res.json({ code: 200, message: "Đơn hàng đã hủy" });
+        }
+      case "returned":
+        await Order.updateOne({ code }, { status });
+        return res.json({ code: 200, message: "Đơn hàng đã được hoàn trả" });
+
+      default:
+        return res.json({ code: 400, message: "Trạng thái không hợp lệ" });
     }
   } catch (error) {
     console.log(error);
-
-    res.json({
-      code: 400,
-      message: "Lỗi params"
-    });
+    res.json({ code: 400, message: "Lỗi xử lý trạng thái đơn hàng" });
   }
-}
+};
+
 
 // [GET] /admin/orders/shipping-settings
 module.exports.getShippingSettings = async (req, res) => {

@@ -4,7 +4,6 @@ const { generateOrd } = require("../../../helpers/generateCodeOrder");
 
 const orderSchema = new mongoose.Schema({
   user_id: String,
-  cart_id: String,
   voucher_code: String,
   code: {
     type: String,
@@ -22,11 +21,14 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     default: "initialize"
-    // initialize
-    // processing
-    // received
-    // success
-    // cancelled
+    // initialize -> đơn hàng vừa đc khách tạo
+    // received -> đã nhận tiền -> đối với bank
+    // confirmed -> đã xác nhận đơn hàng
+    // processing -> đang xử lý, chuẩn bị giao
+    // shipping -> đơn đã bàn giao cho đơn vị giao
+    // completed -> khách đã nhận hàng thành công
+    // cancelled -> Hủy do khách hoặc shop
+    // returned -> hoàn tiền
   },
   paymentMethod: String,
   products: [

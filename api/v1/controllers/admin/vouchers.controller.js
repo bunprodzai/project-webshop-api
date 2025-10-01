@@ -72,6 +72,18 @@ module.exports.createPost = async (req, res) => {
     req.body.createBy = {
       user_Id: req.userAuth.id
     }
+    const voucher_code = req.body.voucher_code;
+
+    const existVoucherCode = await Voucher.findOne({ voucher_code: voucher_code });
+    console.log(existVoucherCode);
+    
+    if (existVoucherCode) {
+      res.json({
+        code: 204,
+        message: "Mã voucher đã tồn tại"
+      });
+      return;
+    }
 
     const voucher = new Voucher(req.body);
     await voucher.save();

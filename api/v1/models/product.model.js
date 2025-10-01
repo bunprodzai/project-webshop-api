@@ -3,7 +3,7 @@ const slug = require('mongoose-slug-updater');
 mongoose.plugin(slug);
 
 const productSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   description: String,
   price: {
     type: Number,
@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema({
     default: 0
   },
   sex: String,
-  thumbnail: String, 
+  thumbnail: String,
   images: [String], // Mảng chứa nhiều ảnh
   status: String,
   position: Number,
@@ -49,7 +49,7 @@ const productSchema = new mongoose.Schema({
       updatedAt: Date
     }
   ],
-  slug: { type: String, slug: "title", unique: true, index: true },
+  slug: { type: String, slug: "title", unique: true },
   deleted: {
     type: Boolean,
     default: false

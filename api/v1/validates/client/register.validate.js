@@ -6,10 +6,13 @@ const registerValidationRules = [
     .notEmpty().withMessage("Email không được để trống.")
     .isEmail().withMessage("Email không hợp lệ."),
   body("fullName")
-    .notEmpty().withMessage("Tên không được để trống."),
+    .notEmpty().withMessage("Tên không được để trống.")
+    .isLength({ max: 50 }).withMessage("Tên không được quá 50 ký tự!")
+    .matches(/^[A-Za-zÀ-ỹ0-9\s]+$/u).withMessage("Tên không được chứa ký tự đặc biệt!"),
   body("password")
     .notEmpty().withMessage("Password không được để trống.")
-    .isLength({ min: 12 }).withMessage("Password phải ít nhất 12 ký tự."),
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/)
+    .withMessage("Password phải 8-20 ký tự, có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt!")
 ];
 
 const registerValid = async (req, res, next) => {

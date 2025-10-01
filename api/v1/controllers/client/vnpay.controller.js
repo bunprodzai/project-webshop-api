@@ -37,7 +37,7 @@ module.exports.createQr = async (req, res) => {
     vnp_TxnRef: code, // mã đơn hàng
     vnp_OrderInfo: orderInfo, // thông tin đơn hàng.
     vnp_OrderType: ProductCode.Other,
-    vnp_ReturnUrl: `https://project-webshop-api.vercel.app/api/v1/vn-pay/check-payment-vnpay`, //
+    vnp_ReturnUrl: `${process.env.BACKEND_URL}/api/v1/vn-pay/check-payment-vnpay`, //
     vnp_Locale: VnpLocale.VN, // 'vn' or 'en'
     vnp_CreateDate: dateFormat(new Date()),
     vnp_ExpireDate: dateFormat(tomorrow), // 1 ngày sau hết hạn
@@ -122,15 +122,15 @@ module.exports.checkPayment = async (req, res) => {
           <br/>
           <p><b>Tổng số lượng sản phẩm</b> ${totalQuantity}</p>
           <p><b>Tổng tiền đơn hàng</b> ${order.totalOrder.toLocaleString()} + ${order.shippingFee.toLocaleString()} đ</p>
-          <a href="http://localhost:3000/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
+          <a href="${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}" style={{ textDecoration: "none" }} target="_blank" rel="noopener noreferrer">Xem chi tiết đơn hàng</a>
           <p>Trân trọng,<br/>Cửa hàng XYZ</p>
           `;
     sendMailHelper.sendMail(order.userInfo.email, subject2, html2);
 
     // Redirect về trang frontend
-    return res.redirect(`https://project-webshop-reactjs.vercel.app/order/checkout/pay/success/${code}`);
+    return res.redirect(`${process.env.FRONTEND_URL}/order/checkout/pay/success/${code}`);
   } else {
-    return res.redirect(`https://project-webshop-reactjs.vercel.app/order/checkout/pay/fail/${code}`);
+    return res.redirect(`${process.env.FRONTEND_URL}/order/checkout/pay/fail/${code}`);
   }
 
   //   {

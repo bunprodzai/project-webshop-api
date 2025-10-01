@@ -4,18 +4,14 @@ const controller = require("../../controllers/client/cart.controller");
 
 const authMiddleware = require("../../middlewares/client/auth.middleware");
 
-router.get("/get-cart/:cartId", controller.getCart);
+router.get("/get-cart", authMiddleware.requireAuth, controller.getCart);
 
-router.patch("/delete/:idProduct", controller.del);
+router.patch("/add/:productId", authMiddleware.requireAuth, controller.addPatch);
 
-router.patch("/update/:idProduct", controller.update);
+router.patch("/update/:idProduct", authMiddleware.requireAuth, controller.updatePatch);
 
-router.patch("/add/:productId", controller.addPatch);
+router.patch("/delete/:idProduct", authMiddleware.requireAuth, controller.delPatch);
 
-router.get("/create", controller.create);
-
-router.patch("/update-user", authMiddleware.requireAuth, controller.updateUser);
-
-router.get("/find", authMiddleware.requireAuth, controller.findCartByUserId);
+router.patch("/merge-cart", authMiddleware.requireAuth, controller.mergeCartPatch);
 
 module.exports = router;

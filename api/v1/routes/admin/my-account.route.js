@@ -1,15 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/admin/my-account.controller");
-const { changePasswordValid, changePasswordValidationRules,
-  editValid, myAccountEditValidationRules
+const { myAccountValid, changePasswordValidationRules, myAccountEditValidationRules
 } = require("../../validates/admin/my-account.validate");
 router.get("/", controller.index);
 
 router.patch("/edit",
-  myAccountEditValidationRules, editValid, controller.editPatch);
+  myAccountEditValidationRules ,myAccountValid, controller.editPatch);
 
 router.patch("/reset-password",
-  changePasswordValidationRules, changePasswordValid, controller.resetPassword);
+  changePasswordValidationRules, myAccountValid, controller.resetPassword);
 
 module.exports = router;

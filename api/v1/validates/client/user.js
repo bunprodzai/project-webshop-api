@@ -1,22 +1,24 @@
 const { body, validationResult } = require("express-validator");
 
-// Rule validate cho login
-const myAccountEditValidationRules = [
+// Rule validate
+const userValidationRules = [
   body("fullName")
     .notEmpty().withMessage("Tên không được để trống")
     .isLength({ max: 40 }).withMessage("Tên không được quá 40 ký tự!")
-    .matches(/^[A-Za-zÀ-ỹ\s]+$/u).withMessage("Tên không được chứa ký tự đặc biệt!"),
+    .trim()
+    .matches(/^[A-Za-zÀ-ỹ0-9\s]+$/u).withMessage("Tên không được chứa ký tự đặc biệt!"),
   body("email")
     .notEmpty().withMessage("Tên không được để trống")
+    .trim()
     .isEmail().withMessage("Email không hợp lệ."),
-  body("password")
-    .notEmpty().withMessage("Password không được để trống.")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/)
-    .withMessage("Password phải 8-20 ký tự, có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt!"),
+
+  body("phone")
+    .optional()
+    .isLength({ min: 10, max: 10 }).withMessage("Phone phải 10 số!")
+    .matches(/^[0-9]+$/).withMessage("Phone chỉ chứa số")
 ];
 
-// Rule validate cho login
-const changePasswordValidationRules = [
+const changePasswordRules = [
   body("passwordOld")
     .notEmpty().withMessage("Mật khẩu cũ không được để trống"),
   body("passwordNew")
@@ -27,9 +29,9 @@ const changePasswordValidationRules = [
     .notEmpty().withMessage("Mật khẩu xác nhận không được để trống.")
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/)
     .withMessage("Password phải 8-20 ký tự, có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt!")
-];
+]
 
-const myAccountValid = async (req, res, next) => {
+const userValid = async (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -46,7 +48,7 @@ const myAccountValid = async (req, res, next) => {
 }
 
 module.exports = {
-  myAccountEditValidationRules,
-  changePasswordValidationRules,
-  myAccountValid
+  userValidationRules,
+  changePasswordRules,
+  userValid
 };

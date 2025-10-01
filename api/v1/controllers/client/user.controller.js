@@ -1,4 +1,5 @@
 const User = require("../../models/users.model");
+const Cart = require("../../models/carts.model");
 const ForgotPassword = require("../../models/forgot-password.model");
 const productHelper = require("../../../../helpers/products");
 const generateHelper = require("../../../../helpers/generateNumber");
@@ -26,6 +27,9 @@ module.exports.registerPost = async (req, res) => {
 
   const user = new User(req.body);
   await user.save();
+
+  const newCart = new Cart({user_id: user._id});
+  await newCart.save();
 
   const token = jwt.sign(
     { id: user._id },
@@ -70,13 +74,14 @@ module.exports.loginPost = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id,
+      {
+        id: user._id,
         fullName: user.fullName
-       },
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
-    
+
     res.json({
       code: 200,
       message: "Đăng nhập thành công",
@@ -217,7 +222,7 @@ module.exports.resetPasswordPost = async (req, res) => {
     const userId = req.user.id;
     const password = req.body.password;
     const comfirmPassword = req.body.comfirmPassword;
-    
+
     if (password != comfirmPassword) {
       res.json({
         code: 400,
@@ -250,7 +255,7 @@ module.exports.resetPasswordPost = async (req, res) => {
     });
   } catch (error) {
     console.log(error.message);
-    
+
     res.json({
       code: 400,
       message: "Lỗi!"
@@ -263,12 +268,12 @@ module.exports.info = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const user = await User.findOne({ _id: userId }).select("-password -tokenUser");
+    const user = await User.findOne({ _id: userId }).select("-password");
 
     res.json({
       code: 200,
       message: "Thông tin cá nhân",
-      user: user
+      data: user
     });
   } catch (error) {
     res.json({
@@ -302,7 +307,7 @@ module.exports.editInfo = async (req, res) => {
 module.exports.resetPasswordPatch = async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     const passwordOld = req.body.passwordOld;
     const passwordNew = req.body.passwordNew;
     const passwordNewComfirm = req.body.passwordNewComfirm;

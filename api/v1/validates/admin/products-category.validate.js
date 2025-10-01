@@ -4,6 +4,9 @@ const { body, validationResult } = require("express-validator");
 const categoryValidationRules = [
   body("title")
     .notEmpty().withMessage("Tiêu đề không được để trống!")
+    .isLength({ max: 60 }).withMessage("Tiêu đề không được nhập quá 60 kí tự!")
+    .trim()
+    .matches(/^[A-Za-zÀ-ỹ0-9\s]+$/u).withMessage("Tiêu đề không được chứa ký tự đặc biệt!"),
 ];
 
 const categoryValid = async (req, res, next) => {

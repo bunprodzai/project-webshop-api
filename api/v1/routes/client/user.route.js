@@ -2,9 +2,13 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../../controllers/client/user.controller");
 const { registerValidationRules, registerValid } = require("../../validates/client/register.validate");
+
 const { loginValidationRules, loginUserValid } = require("../../validates/client/login.validate");
+
 const { apiLimiter } = require("../../middlewares/apiLimiter.middleware");
 const validForgot = require("../../validates/client/forgot-password");
+
+const { changePasswordRules, userValidationRules, userValid } = require("../../validates/client/user");
 
 const authMiddleware = require("../../middlewares/client/auth.middleware");
 
@@ -26,14 +30,13 @@ router.post("/password/reset-password", authMiddleware.requireAuth,
 router.get("/info", authMiddleware.requireAuth,
   controller.info);
 
-router.patch("/info/edit", authMiddleware.requireAuth,
+router.patch("/info/edit", userValidationRules, userValid, authMiddleware.requireAuth,
   controller.editInfo);
 
-router.patch("/info/reset-password", authMiddleware.requireAuth,
+router.patch("/info/reset-password", changePasswordRules, userValid, authMiddleware.requireAuth,
   controller.resetPasswordPatch);
 
 router.get("/history-order", authMiddleware.requireAuth,
   controller.ordersHistoryByUserId);
-
 
 module.exports = router;

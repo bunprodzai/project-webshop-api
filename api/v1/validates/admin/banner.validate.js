@@ -2,14 +2,18 @@ const { body, validationResult } = require("express-validator");
 
 const bannerValidationRules = [
   body("title")
-    .notEmpty().withMessage("Tiêu đề không được để trống!"),
+    .notEmpty().withMessage("Tiêu đề không được để trống!")
+    .trim()
+    .isLength({ max: 60 }).withMessage("Tiêu đề không được nhập quá 60 kí tự!"),
   body("backgroundColor")
     .notEmpty().withMessage("Màu nền không được để trống!"),
   body("excerpt")
     .isLength({ max: 200 }).withMessage("Trích đoạn không được nhập quá dài!")
+    .trim()
     .notEmpty().withMessage("Trích đoạn không được để trống!"),
   body("content")
-    .notEmpty().withMessage("Nội dung không được để trống!"),
+    .notEmpty().withMessage("Nội dung không được để trống!")
+    .trim(),
   body("start_date")
     .notEmpty().withMessage("Ngày bắt đầu không được để trống!"),
   body("end_date")

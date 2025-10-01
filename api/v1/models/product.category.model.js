@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 const slug = require('mongoose-slug-updater');
+const { index } = require("../controllers/admin/vouchers.controller");
 mongoose.plugin(slug);
 
 
 const productCategorySchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   description: String,
   thumbnail: String,
   parent_id: {

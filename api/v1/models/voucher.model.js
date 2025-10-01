@@ -4,7 +4,7 @@ const slug = require('mongoose-slug-updater');
 mongoose.plugin(slug);
 
 const voucherSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   excerpt: String,
   start_date: {
     type: Date,

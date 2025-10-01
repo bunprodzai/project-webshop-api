@@ -4,7 +4,7 @@ mongoose.plugin(slug);
 
 
 const articleSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   excerpt: String,
   description: String,
   thumbnail: String,

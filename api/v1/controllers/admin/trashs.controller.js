@@ -194,7 +194,7 @@ module.exports.restoreItem = async (req, res) => {
     switch (typeItem) {
       case "product":
         {
-          const product = await Product.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const product = await Product.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!product) {
             res.json({
@@ -208,7 +208,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "category":
         {
-          const category = await ProductCategory.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const category = await ProductCategory.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!category) {
             res.json({
@@ -222,7 +222,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "article":
         {
-          const article = await Article.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const article = await Article.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!article) {
             res.json({
@@ -236,7 +236,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "banner":
         {
-          const banner = await Banner.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const banner = await Banner.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!banner) {
             res.json({
@@ -250,7 +250,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "voucher":
         {
-          const voucher = await Voucher.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const voucher = await Voucher.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!voucher) {
             res.json({
@@ -264,7 +264,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "account":
         {
-          const account = await Account.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const account = await Account.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!account) {
             res.json({
@@ -278,7 +278,7 @@ module.exports.restoreItem = async (req, res) => {
 
       case "user":
         {
-          const user = await User.findByIdAndUpdate(idItem, { deleted: false }).lean();
+          const user = await User.findByIdAndUpdate(idItem, { deleted: false });
 
           if (!user) {
             res.json({
@@ -315,7 +315,7 @@ module.exports.permanentItem = async (req, res) => {
     switch (typeItem) {
       case "product":
         {
-          const product = await Product.findByIdAndDelete(idItem).lean();
+          const product = await Product.findByIdAndDelete(idItem);
 
           if (!product) {
             res.json({
@@ -329,7 +329,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "category":
         {
-          const category = await ProductCategory.findByIdAndDelete(idItem).lean();
+          const category = await ProductCategory.findByIdAndDelete(idItem);
 
           if (!category) {
             res.json({
@@ -343,7 +343,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "article":
         {
-          const article = await Article.findByIdAndDelete(idItem).lean();
+          const article = await Article.findByIdAndDelete(idItem);
 
           if (!article) {
             res.json({
@@ -357,7 +357,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "banner":
         {
-          const banner = await Banner.findByIdAndDelete(idItem).lean();
+          const banner = await Banner.findByIdAndDelete(idItem);
 
           if (!banner) {
             res.json({
@@ -371,7 +371,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "voucher":
         {
-          const voucher = await Voucher.findByIdAndDelete(idItem).lean();
+          const voucher = await Voucher.findByIdAndDelete(idItem);
 
           if (!voucher) {
             res.json({
@@ -385,7 +385,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "account":
         {
-          const account = await Account.findByIdAndDelete(idItem).lean();
+          const account = await Account.findByIdAndDelete(idItem);
 
           if (!account) {
             res.json({
@@ -399,7 +399,7 @@ module.exports.permanentItem = async (req, res) => {
 
       case "user":
         {
-          const user = await User.findByIdAndDelete(idItem).lean();
+          const user = await User.findByIdAndDelete(idItem);
           console.log(idItem);
 
           if (!user) {

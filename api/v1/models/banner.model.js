@@ -4,7 +4,7 @@ const slug = require('mongoose-slug-updater');
 mongoose.plugin(slug);
 
 const bannerSchema = new mongoose.Schema({
-  title: String,
+  title: { type: String, required: true },
   content: String,
   start_date: {
     type: Date,

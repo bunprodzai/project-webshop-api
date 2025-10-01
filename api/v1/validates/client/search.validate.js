@@ -4,7 +4,7 @@ const { query, validationResult } = require("express-validator");
 const searchValidationRules = [
   query("keyword")
     .notEmpty().withMessage("Từ khóa tìm kiếm không được để trống.")
-    .isLength({ max: 300 }).withMessage("Từ khóa tìm kiếm không vượt quá 300 ký tự!")
+    .isLength({ max: 124 }).withMessage("Từ khóa tìm kiếm không vượt quá 124 ký tự!")
 ];
 
 const searchValid = async (req, res, next) => {
